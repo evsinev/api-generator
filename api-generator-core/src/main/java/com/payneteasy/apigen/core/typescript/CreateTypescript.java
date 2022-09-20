@@ -27,8 +27,13 @@ public class CreateTypescript {
                 .add("types", members.getTypes())
                 .add("enums", members.getEnums())
                 .add("methods", getTypescriptMethods(prefixSegment, aInterface))
+                .add("className", remoteFirstLetter(aInterface.getSimpleName()))
                 .createText();
 
+    }
+
+    private String remoteFirstLetter(String aName) {
+        return aName.startsWith("I") ? aName.substring(1) : aName;
     }
 
 }

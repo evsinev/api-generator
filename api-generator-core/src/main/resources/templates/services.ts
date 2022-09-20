@@ -18,6 +18,30 @@ export type [=type.typeName] = {
 
 [/#list]
 
+export default class [=className] {
+
+    //region API
+[#list methods as method]
+    static [=method.methodName](aRequest : [=method.parameterType]) : Promise<[=method.returnType]> {
+        return doPost<[=method.returnType]>("[=method.path]", aRequest);
+    }
+
+[/#list]
+    //endregion
+
+    //region useEffect
+[#list methods as method]
+    static useEffect[=method.uppercaseName](aRequest : [=method.parameterType]) : AsyncState<[=method.returnType]> {
+        return useEffectAxios<[=method.returnType]>("[=method.path]", aRequest);
+    }
+
+[/#list]
+    //endregion
+
+}
+
+
+
 [#list methods as method]
 [#if method.hasParameters()]
 export const use[=method.uppercaseName] = (params : [=method.parameterType]) : IUseApi<[=method.returnType]> => {
