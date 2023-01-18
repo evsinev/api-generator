@@ -1,5 +1,6 @@
 package com.payneteasy.apigen.core.typescript;
 
+import com.payneteasy.apigen.core.util.Methods;
 import jakarta.ws.rs.Path;
 
 import java.util.Collection;

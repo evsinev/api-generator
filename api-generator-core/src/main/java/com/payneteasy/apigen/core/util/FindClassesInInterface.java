@@ -1,4 +1,4 @@
-package com.payneteasy.apigen.core.typescript;
+package com.payneteasy.apigen.core.util;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static com.payneteasy.apigen.core.typescript.Methods.getAllMethods;
+import static com.payneteasy.apigen.core.util.Methods.getAllMethods;
 
 public class FindClassesInInterface {
 

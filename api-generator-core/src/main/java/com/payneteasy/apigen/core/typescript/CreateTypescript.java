@@ -1,5 +1,6 @@
 package com.payneteasy.apigen.core.typescript;
 
+import com.payneteasy.apigen.core.util.FindClassesInInterface;
 import com.payneteasy.freemarker.FreemarkerFactory;
 import com.payneteasy.freemarker.FreemarkerTemplate;
 
