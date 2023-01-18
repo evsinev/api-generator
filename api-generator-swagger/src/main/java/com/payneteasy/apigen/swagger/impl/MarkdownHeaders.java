@@ -1,6 +1,9 @@
-package com.payneteasy.apigen.swagger;
+package com.payneteasy.apigen.swagger.impl;
+
+import com.payneteasy.apigen.swagger.IOperationDescriptionExtractor;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -8,7 +11,7 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.ofNullable;
 
-public class MarkdownHeaders {
+public class MarkdownHeaders implements IOperationDescriptionExtractor {
 
     private final Map<String, String> map;
 
@@ -52,7 +55,8 @@ public class MarkdownHeaders {
         pendingContent.delete(0, pendingContent.length());
     }
 
-    public Optional<String> getContent(String aName) {
-        return ofNullable(map.get(aName));
+    @Override
+    public Optional<String> getOperationDescription(String aPath, Class<?> aClass, Method aMethod) {
+        return ofNullable(map.get(aPath));
     }
 }

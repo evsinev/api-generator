@@ -27,16 +27,23 @@ public class SwaggerBuilder {
     private final SwaggerMethodPathItem swaggerMethodPathItem;
 
     public SwaggerBuilder(
-              @Nonnull OpenAPI                aOpenApi
-            , @Nonnull List<Class<?>>         aInterfaces
-            , @Nonnull MarkdownHeaders        aHeaders
-            , @Nonnull IPathExtractor         aMethodPathExtractor
-            , @Nonnull ISecurityItemExtractor aSecurityItemExtractor
+              @Nonnull OpenAPI                        aOpenApi
+            , @Nonnull List<Class<?>>                 aInterfaces
+            , @Nonnull IPathExtractor                 aMethodPathExtractor
+            , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
+            , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
+            , @Nonnull IAdditionalParameters          aAdditionalParameters
     ) {
-        interfaces            = aInterfaces;
-        api                   = aOpenApi;
-        swaggerMethodPathItem = new SwaggerMethodPathItem(aHeaders, aMethodPathExtractor, aSecurityItemExtractor);
-        methodPathExtractor   = aMethodPathExtractor;
+        interfaces          = aInterfaces;
+        api                 = aOpenApi;
+        methodPathExtractor = aMethodPathExtractor;
+
+        swaggerMethodPathItem = new SwaggerMethodPathItem(
+                  aOperationDescriptionExtractor
+                , aMethodPathExtractor
+                , aSecurityItemExtractor
+                , aAdditionalParameters
+        );
     }
 
     public String buildYaml() {

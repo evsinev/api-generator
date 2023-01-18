@@ -1,14 +1,14 @@
 package com.payneteasy.apigen.swagger.impl;
 
+import com.payneteasy.apigen.swagger.IAdditionalParameters;
+import com.payneteasy.apigen.swagger.IOperationDescriptionExtractor;
 import com.payneteasy.apigen.swagger.IPathExtractor;
 import com.payneteasy.apigen.swagger.ISecurityItemExtractor;
-import com.payneteasy.apigen.swagger.MarkdownHeaders;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.parameters.PathParameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -19,33 +19,42 @@ import java.lang.reflect.Method;
 
 public class SwaggerMethodPathItem {
 
-    private final MarkdownHeaders headers;
-    private final IPathExtractor  pathExtractor;
-    private final ISecurityItemExtractor securityItemExtractor;
+    private final IPathExtractor                 pathExtractor;
+    private final ISecurityItemExtractor         securityItemExtractor;
+    private final IOperationDescriptionExtractor operationDescriptionExtractor;
+    private final IAdditionalParameters          additionalParameters;
 
-    public SwaggerMethodPathItem(MarkdownHeaders headers, IPathExtractor pathExtractor, ISecurityItemExtractor securityItemExtractor) {
-        this.headers               = headers;
-        this.pathExtractor         = pathExtractor;
-        this.securityItemExtractor = securityItemExtractor;
+    public SwaggerMethodPathItem(
+              IOperationDescriptionExtractor aOperationDescriptionExtractor
+            , IPathExtractor                 pathExtractor
+            , ISecurityItemExtractor         securityItemExtractor
+            , IAdditionalParameters          aAdditionalParameters
+    ) {
+        operationDescriptionExtractor = aOperationDescriptionExtractor;
+        this.pathExtractor            = pathExtractor;
+        this.securityItemExtractor    = securityItemExtractor;
+        additionalParameters          = aAdditionalParameters;
     }
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
-        String path = pathExtractor.getMethodPath(clazz, aMethod);
-        PathItem item = new PathItem();
+        String    path      = pathExtractor.getMethodPath(clazz, aMethod);
+        PathItem  item      = new PathItem();
         Operation operation = getOperation(clazz, aMethod);
-        operation.description(headers.getContent(pathExtractor.getMethodPath(clazz, aMethod)).orElse(null));
+
         item.operation(PathItem.HttpMethod.POST, operation);
-        if(path.contains("{ingressId}")) {
-            item.addParametersItem(
-                    new PathParameter()
-                            .in("path")
-                            .description("Ingress ID")
-                            .required(true)
-                            .schema(new Schema<>().type("integer"))
-                            .name("ingressId")
-                            .example("1")
-            );
-        }
+
+        securityItemExtractor
+                .getSecurityItem(clazz, aMethod)
+                .ifPresent(operation::addSecurityItem);
+
+        operationDescriptionExtractor
+                .getOperationDescription(path, clazz, aMethod)
+                .ifPresent(operation::description);
+
+        additionalParameters
+                .getAdditionalParameters(path, clazz, aMethod)
+                .ifPresent(parameters -> parameters.forEach(item::addParametersItem));
+
         return item;
     }
 
@@ -53,12 +62,12 @@ public class SwaggerMethodPathItem {
     private Operation getOperation(Class<?> clazz, Method aMethod) {
         Operation operation = new Operation();
         operation.addTagsItem(clazz.getSimpleName());
+
         if(!"VoidRequest".equals(getParameterName(aMethod))){
             operation.requestBody(createRequestBody(aMethod));
         }
-        operation.responses(createResponse(aMethod));
 
-        securityItemExtractor.getSecurityItem(clazz, aMethod).ifPresent(operation::addSecurityItem);
+        operation.responses(createResponse(aMethod));
 
         return operation;
     }
