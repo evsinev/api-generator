@@ -34,3 +34,6 @@ Maven plugin for generating typescript, swagger API from java interfaces.
 | prefixSegment | /api              | Prefix for path                     |
 | targetDir     | target/procedures | Where to generate stored procedures |
 
+## License
+
+The project is licensed under the Apache License 2.0

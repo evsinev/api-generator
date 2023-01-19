@@ -26,7 +26,6 @@ public class SwaggerBuilder {
     private final IPathExtractor           methodPathExtractor;
     private final SwaggerMethodPathItem    swaggerMethodPathItem;
     private final List<Class<?>>           errorClasses;
-    private final IErrorResponsesExtractor errorResponsesExtractor;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
@@ -42,7 +41,6 @@ public class SwaggerBuilder {
         api                     = aOpenApi;
         methodPathExtractor     = aMethodPathExtractor;
         errorClasses            = aErrorClasses;
-        errorResponsesExtractor = aErrorResponsesExtractor;
 
         swaggerMethodPathItem = new SwaggerMethodPathItem(
                   aOperationDescriptionExtractor
