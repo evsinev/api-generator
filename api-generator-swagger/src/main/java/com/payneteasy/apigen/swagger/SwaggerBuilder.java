@@ -21,10 +21,12 @@ import static java.util.stream.Collectors.toList;
 
 public class SwaggerBuilder {
 
-    private final OpenAPI               api;
-    private final List<Class<?>>        interfaces;
-    private final IPathExtractor        methodPathExtractor;
-    private final SwaggerMethodPathItem swaggerMethodPathItem;
+    private final OpenAPI                  api;
+    private final List<Class<?>>           interfaces;
+    private final IPathExtractor           methodPathExtractor;
+    private final SwaggerMethodPathItem    swaggerMethodPathItem;
+    private final List<Class<?>>           errorClasses;
+    private final IErrorResponsesExtractor errorResponsesExtractor;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
@@ -33,16 +35,21 @@ public class SwaggerBuilder {
             , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
             , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
             , @Nonnull IAdditionalParameters          aAdditionalParameters
+            , @Nonnull List<Class<?>>                 aErrorClasses
+            , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
     ) {
-        interfaces          = aInterfaces;
-        api                 = aOpenApi;
-        methodPathExtractor = aMethodPathExtractor;
+        interfaces              = aInterfaces;
+        api                     = aOpenApi;
+        methodPathExtractor     = aMethodPathExtractor;
+        errorClasses            = aErrorClasses;
+        errorResponsesExtractor = aErrorResponsesExtractor;
 
         swaggerMethodPathItem = new SwaggerMethodPathItem(
                   aOperationDescriptionExtractor
                 , aMethodPathExtractor
                 , aSecurityItemExtractor
                 , aAdditionalParameters
+                , aErrorResponsesExtractor
         );
     }
 
@@ -50,7 +57,7 @@ public class SwaggerBuilder {
         api
             .tags(getTags(interfaces))
             .paths(createPaths(interfaces))
-            .setComponents(new SwaggerMethodComponents()
+            .setComponents(new SwaggerMethodComponents(errorClasses)
                 .createComponents(interfaces)
             );
 

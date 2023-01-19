@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Collections;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 
 public class SwaggerBuilderTest {
@@ -21,6 +22,8 @@ public class SwaggerBuilderTest {
                 , (aClass, aMethod) -> empty()
                 , new MarkdownHeaders(new File("src/test/resources/sample-api.md"))
                 , (path, clazz, aMethod) -> empty()
+                , emptyList()
+                , (aPath, aClass, aMethod) -> emptyList()
         );
         
         String yaml = swaggerBuilder.buildYaml();

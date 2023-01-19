@@ -1,9 +1,6 @@
 package com.payneteasy.apigen.swagger.impl;
 
-import com.payneteasy.apigen.swagger.IAdditionalParameters;
-import com.payneteasy.apigen.swagger.IOperationDescriptionExtractor;
-import com.payneteasy.apigen.swagger.IPathExtractor;
-import com.payneteasy.apigen.swagger.ISecurityItemExtractor;
+import com.payneteasy.apigen.swagger.*;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
@@ -23,23 +20,26 @@ public class SwaggerMethodPathItem {
     private final ISecurityItemExtractor         securityItemExtractor;
     private final IOperationDescriptionExtractor operationDescriptionExtractor;
     private final IAdditionalParameters          additionalParameters;
+    private final IErrorResponsesExtractor       errorResponsesExtractor;
 
     public SwaggerMethodPathItem(
               IOperationDescriptionExtractor aOperationDescriptionExtractor
             , IPathExtractor                 pathExtractor
             , ISecurityItemExtractor         securityItemExtractor
             , IAdditionalParameters          aAdditionalParameters
+            , IErrorResponsesExtractor       aErrorResponsesExtractor
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
         this.securityItemExtractor    = securityItemExtractor;
         additionalParameters          = aAdditionalParameters;
+        errorResponsesExtractor       = aErrorResponsesExtractor;
     }
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
         String    path      = pathExtractor.getMethodPath(clazz, aMethod);
         PathItem  item      = new PathItem();
-        Operation operation = getOperation(clazz, aMethod);
+        Operation operation = getOperation(path, clazz, aMethod);
 
         item.operation(PathItem.HttpMethod.POST, operation);
 
@@ -59,7 +59,7 @@ public class SwaggerMethodPathItem {
     }
 
     @NotNull
-    private Operation getOperation(Class<?> clazz, Method aMethod) {
+    private Operation getOperation(String aPath, Class<?> clazz, Method aMethod) {
         Operation operation = new Operation();
         operation.addTagsItem(clazz.getSimpleName());
 
@@ -67,22 +67,34 @@ public class SwaggerMethodPathItem {
             operation.requestBody(createRequestBody(aMethod));
         }
 
-        operation.responses(createResponse(aMethod));
+        operation.responses(createResponse(aPath, clazz, aMethod));
 
         return operation;
     }
 
-    private ApiResponses createResponse(Method aMethod) {
-        return new ApiResponses()
-                .addApiResponse("200", new ApiResponse()
-                        .description("Success response")
-                        .content(new Content()
-                                .addMediaType("application/json", new MediaType()
-                                        .schema(new Schema().$ref("#/components/schemas/" + aMethod.getReturnType().getSimpleName()))
-                                )
-                        )
-                );
-        // todo add non-200 responses
+    private ApiResponses createResponse(String aPath, Class<?> aClass, Method aMethod) {
+        ApiResponses responses = new ApiResponses()
+        .addApiResponse("200", new ApiResponse()
+            .description("Success response")
+            .content(new Content()
+                .addMediaType("application/json", new MediaType()
+                    .schema(new Schema().$ref("#/components/schemas/" + aMethod.getReturnType().getSimpleName()))
+                )
+            )
+        );
+
+        errorResponsesExtractor
+            .getErrorResponse(aPath, aClass, aMethod)
+            .forEach(error -> responses
+                .addApiResponse(
+                    error.getName()
+                    , new ApiResponse()
+                        .description(error.getDescription())
+                        .content(errorJson(error.getResponseClass()))
+                )
+            );
+
+        return responses;
     }
 
     private Content errorJson(Class<?> aClass) {
