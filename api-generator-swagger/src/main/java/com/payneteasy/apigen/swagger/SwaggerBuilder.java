@@ -1,9 +1,9 @@
 package com.payneteasy.apigen.swagger;
 
 import com.payneteasy.apigen.core.util.Methods;
+import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy.*;
 import com.payneteasy.apigen.swagger.impl.SwaggerMethodComponents;
 import com.payneteasy.apigen.swagger.impl.SwaggerMethodPathItem;
-import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -20,21 +20,21 @@ import static java.util.stream.Collectors.toList;
 
 public class SwaggerBuilder {
 
-    private final OpenAPI                  api;
+    private final OpenAPI                               api;
     private final List<Class<?>>                        interfaces;
-    private final SwaggerBuilderStrategy.IPathExtractor methodPathExtractor;
+    private final IPathExtractor methodPathExtractor;
     private final SwaggerMethodPathItem                 swaggerMethodPathItem;
-    private final List<Class<?>>           errorClasses;
+    private final List<Class<?>>                        errorClasses;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
             , @Nonnull List<Class<?>>                 aInterfaces
-            , @Nonnull SwaggerBuilderStrategy.IPathExtractor aMethodPathExtractor
-            , @Nonnull SwaggerBuilderStrategy.ISecurityItemExtractor aSecurityItemExtractor
-            , @Nonnull SwaggerBuilderStrategy.IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , @Nonnull SwaggerBuilderStrategy.IAdditionalParameters aAdditionalParameters
+            , @Nonnull IPathExtractor                 aMethodPathExtractor
+            , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
+            , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
+            , @Nonnull IAdditionalParameters          aAdditionalParameters
             , @Nonnull List<Class<?>>                 aErrorClasses
-            , @Nonnull SwaggerBuilderStrategy.IErrorResponsesExtractor aErrorResponsesExtractor
+            , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
     ) {
         interfaces              = aInterfaces;
         api                     = aOpenApi;
@@ -50,7 +50,7 @@ public class SwaggerBuilder {
         );
     }
 
-    public String buildYaml() {
+    public OpenAPI buildOpenApiModel() {
         api
             .tags(getTags(interfaces))
             .paths(createPaths(interfaces))
@@ -58,7 +58,7 @@ public class SwaggerBuilder {
                 .createComponents(interfaces)
             );
 
-        return Yaml.pretty(api);
+        return api;
     }
 
     private Paths createPaths(List<Class<?>> aInterfaces) {

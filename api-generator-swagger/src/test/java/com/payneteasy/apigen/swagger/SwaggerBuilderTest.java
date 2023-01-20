@@ -2,6 +2,7 @@ package com.payneteasy.apigen.swagger;
 
 import com.payneteasy.apigen.swagger.impl.MarkdownHeaders;
 import com.payneteasy.apigen.swagger.task.ITaskService;
+import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.junit.Test;
 
@@ -25,8 +26,9 @@ public class SwaggerBuilderTest {
                 , emptyList()
                 , (aPath, aClass, aMethod) -> emptyList()
         );
-        
-        String yaml = swaggerBuilder.buildYaml();
+
+        OpenAPI openAPI = swaggerBuilder.buildOpenApiModel();
+        String  yaml    = Yaml.pretty(openAPI);
 
         System.out.println("yaml = " + yaml);
 
