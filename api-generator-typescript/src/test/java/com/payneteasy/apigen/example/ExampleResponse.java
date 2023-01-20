@@ -1,10 +1,9 @@
-package com.payneteasy.apigen.core.typescript.example;
+package com.payneteasy.apigen.example;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -12,7 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 @Builder
-public class ExampleRequest {
+public class ExampleResponse {
     String fieldString;
 
     byte    fieldByte;
@@ -36,7 +35,4 @@ public class ExampleRequest {
 
     ExampleEnum exampleEnum;
 
-    @Nullable ExampleEntity       nullableEntity;
-    @Nullable List<ExampleEntity> nullableEntities;
-    @Nullable ExampleEnum         nullableExampleEnum;
 }

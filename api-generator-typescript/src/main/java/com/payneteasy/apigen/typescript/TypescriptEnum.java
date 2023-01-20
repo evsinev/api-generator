@@ -1,4 +1,4 @@
-package com.payneteasy.apigen.core.typescript;
+package com.payneteasy.apigen.typescript;
 
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,8 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @Builder
 @FieldDefaults(makeFinal = true, level = PRIVATE)
-public class TypescriptType {
-    String                    typeName;
-    List<TypescriptTypeField> fields;
+public class TypescriptEnum {
+
+    String       enumName;
+    List<String> enumValues;
 }

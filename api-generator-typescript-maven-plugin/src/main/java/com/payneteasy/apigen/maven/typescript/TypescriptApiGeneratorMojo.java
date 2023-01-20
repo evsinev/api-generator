@@ -1,6 +1,6 @@
 package com.payneteasy.apigen.maven.typescript;
 
-import com.payneteasy.apigen.core.typescript.CreateTypescript;
+import com.payneteasy.apigen.typescript.CreateTypescript;
 import jakarta.ws.rs.Path;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;

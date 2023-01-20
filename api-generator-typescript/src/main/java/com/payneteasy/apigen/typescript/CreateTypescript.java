@@ -1,4 +1,4 @@
-package com.payneteasy.apigen.core.typescript;
+package com.payneteasy.apigen.typescript;
 
 import com.payneteasy.apigen.core.util.FindClassesInInterface;
 import com.payneteasy.freemarker.FreemarkerFactory;
@@ -6,7 +6,7 @@ import com.payneteasy.freemarker.FreemarkerTemplate;
 
 import java.io.File;
 
-import static com.payneteasy.apigen.core.typescript.InterfaceMethodsToTypescript.getTypescriptMethods;
+import static com.payneteasy.apigen.typescript.InterfaceMethodsToTypescript.getTypescriptMethods;
 
 public class CreateTypescript {
 

@@ -1,4 +1,4 @@
-package com.payneteasy.apigen.core.typescript.example;
+package com.payneteasy.apigen.example;
 
 import lombok.Builder;
 import lombok.Data;

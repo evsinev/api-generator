@@ -1,4 +1,4 @@
-package com.payneteasy.apigen.core.typescript.example;
+package com.payneteasy.apigen.example;
 
 public enum ExampleEnum {
 

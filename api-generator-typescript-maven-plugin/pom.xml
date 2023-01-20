@@ -30,6 +30,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.payneteasy.api-generator</groupId>
+            <artifactId>api-generator-typescript</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

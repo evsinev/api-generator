@@ -10,7 +10,6 @@ import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.tags.Tag;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +102,7 @@ public class SwaggerBuilder {
         }
 
         @Override
-        public int compareTo(@NotNull SwaggerBuilder.SortedMapEntry another) {
+        public int compareTo(@Nonnull SwaggerBuilder.SortedMapEntry another) {
             return delegate.getKey().compareTo(another.getKey());
         }
 

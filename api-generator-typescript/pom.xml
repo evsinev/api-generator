@@ -4,7 +4,7 @@
     <packaging>jar</packaging>
 
     <groupId>com.payneteasy.api-generator</groupId>
-    <artifactId>api-generator-swagger</artifactId>
+    <artifactId>api-generator-typescript</artifactId>
 
     <parent>
         <groupId>com.payneteasy</groupId>
@@ -32,6 +32,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.payneteasy</groupId>
+            <artifactId>freemarker-util</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-models</artifactId>
         </dependency>
@@ -44,32 +49,23 @@
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
     </dependencies>
 

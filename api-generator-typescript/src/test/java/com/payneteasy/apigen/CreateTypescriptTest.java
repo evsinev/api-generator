@@ -1,6 +1,7 @@
-package com.payneteasy.apigen.core.typescript;
+package com.payneteasy.apigen;
 
-import com.payneteasy.apigen.core.typescript.example.IExampleService;
+import com.payneteasy.apigen.typescript.CreateTypescript;
+import com.payneteasy.apigen.example.IExampleService;
 import org.junit.Test;
 
 public class CreateTypescriptTest {

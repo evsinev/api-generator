@@ -1,4 +1,4 @@
-package com.payneteasy.apigen.core.typescript;
+package com.payneteasy.apigen.typescript;
 
 import com.payneteasy.apigen.core.util.Fields;
 

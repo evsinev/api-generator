@@ -10,7 +10,7 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 
 
@@ -58,7 +58,7 @@ public class SwaggerMethodPathItem {
         return item;
     }
 
-    @NotNull
+    @Nonnull
     private Operation getOperation(String aPath, Class<?> clazz, Method aMethod) {
         Operation operation = new Operation();
         operation.addTagsItem(clazz.getSimpleName());
@@ -113,7 +113,7 @@ public class SwaggerMethodPathItem {
                 );
     }
 
-    @NotNull
+    @Nonnull
     private String getParameterName(Method aMethod) {
         return aMethod.getParameterTypes()[0].getSimpleName();
     }
