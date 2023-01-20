@@ -24,8 +24,13 @@
         <maven.tools.version>3.6.0</maven.tools.version>
     </properties>
 
-
     <distributionManagement>
+        <repository>
+            <id>mpos-repo</id>
+            <name>mpos release repository</name>
+            <url>https://mpos.pne.io/maven-deploy/releases</url>
+        </repository>
+
         <site>
             <id>local-site</id>
             <name>Store only on local disk</name>
