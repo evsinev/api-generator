@@ -1,12 +1,12 @@
 package com.payneteasy.apigen.swagger.impl;
 
-import com.payneteasy.apigen.swagger.IPathExtractor;
+import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy;
 import jakarta.ws.rs.Path;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 
-public class SwaggerPathAnnotationImpl implements IPathExtractor {
+public class SwaggerPathAnnotationImpl implements SwaggerBuilderStrategy.IPathExtractor {
 
     @Override
     @Nonnull

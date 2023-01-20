@@ -1,6 +1,6 @@
 package com.payneteasy.apigen.swagger.impl;
 
-import com.payneteasy.apigen.swagger.IOperationDescriptionExtractor;
+import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -11,7 +11,7 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.ofNullable;
 
-public class MarkdownHeaders implements IOperationDescriptionExtractor {
+public class MarkdownHeaders implements SwaggerBuilderStrategy.IOperationDescriptionExtractor {
 
     private final Map<String, String> map;
 

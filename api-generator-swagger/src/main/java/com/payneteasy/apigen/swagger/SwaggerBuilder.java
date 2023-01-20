@@ -21,20 +21,20 @@ import static java.util.stream.Collectors.toList;
 public class SwaggerBuilder {
 
     private final OpenAPI                  api;
-    private final List<Class<?>>           interfaces;
-    private final IPathExtractor           methodPathExtractor;
-    private final SwaggerMethodPathItem    swaggerMethodPathItem;
+    private final List<Class<?>>                        interfaces;
+    private final SwaggerBuilderStrategy.IPathExtractor methodPathExtractor;
+    private final SwaggerMethodPathItem                 swaggerMethodPathItem;
     private final List<Class<?>>           errorClasses;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
             , @Nonnull List<Class<?>>                 aInterfaces
-            , @Nonnull IPathExtractor                 aMethodPathExtractor
-            , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
-            , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , @Nonnull IAdditionalParameters          aAdditionalParameters
+            , @Nonnull SwaggerBuilderStrategy.IPathExtractor aMethodPathExtractor
+            , @Nonnull SwaggerBuilderStrategy.ISecurityItemExtractor aSecurityItemExtractor
+            , @Nonnull SwaggerBuilderStrategy.IOperationDescriptionExtractor aOperationDescriptionExtractor
+            , @Nonnull SwaggerBuilderStrategy.IAdditionalParameters aAdditionalParameters
             , @Nonnull List<Class<?>>                 aErrorClasses
-            , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
+            , @Nonnull SwaggerBuilderStrategy.IErrorResponsesExtractor aErrorResponsesExtractor
     ) {
         interfaces              = aInterfaces;
         api                     = aOpenApi;

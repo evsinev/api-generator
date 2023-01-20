@@ -1,6 +1,6 @@
 package com.payneteasy.apigen.swagger.impl;
 
-import com.payneteasy.apigen.swagger.*;
+import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
@@ -16,18 +16,18 @@ import java.lang.reflect.Method;
 
 public class SwaggerMethodPathItem {
 
-    private final IPathExtractor                 pathExtractor;
-    private final ISecurityItemExtractor         securityItemExtractor;
-    private final IOperationDescriptionExtractor operationDescriptionExtractor;
-    private final IAdditionalParameters          additionalParameters;
-    private final IErrorResponsesExtractor       errorResponsesExtractor;
+    private final SwaggerBuilderStrategy.IPathExtractor                 pathExtractor;
+    private final SwaggerBuilderStrategy.ISecurityItemExtractor         securityItemExtractor;
+    private final SwaggerBuilderStrategy.IOperationDescriptionExtractor operationDescriptionExtractor;
+    private final SwaggerBuilderStrategy.IAdditionalParameters          additionalParameters;
+    private final SwaggerBuilderStrategy.IErrorResponsesExtractor errorResponsesExtractor;
 
     public SwaggerMethodPathItem(
-              IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , IPathExtractor                 pathExtractor
-            , ISecurityItemExtractor         securityItemExtractor
-            , IAdditionalParameters          aAdditionalParameters
-            , IErrorResponsesExtractor       aErrorResponsesExtractor
+              SwaggerBuilderStrategy.IOperationDescriptionExtractor aOperationDescriptionExtractor
+            , SwaggerBuilderStrategy.IPathExtractor pathExtractor
+            , SwaggerBuilderStrategy.ISecurityItemExtractor securityItemExtractor
+            , SwaggerBuilderStrategy.IAdditionalParameters aAdditionalParameters
+            , SwaggerBuilderStrategy.IErrorResponsesExtractor aErrorResponsesExtractor
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
@@ -53,7 +53,7 @@ public class SwaggerMethodPathItem {
 
         additionalParameters
                 .getAdditionalParameters(path, clazz, aMethod)
-                .ifPresent(parameters -> parameters.forEach(item::addParametersItem));
+                .forEach(item::addParametersItem);
 
         return item;
     }

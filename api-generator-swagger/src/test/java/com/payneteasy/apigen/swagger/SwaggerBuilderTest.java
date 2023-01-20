@@ -21,7 +21,7 @@ public class SwaggerBuilderTest {
                 , (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName()
                 , (aClass, aMethod) -> empty()
                 , new MarkdownHeaders(new File("src/test/resources/sample-api.md"))
-                , (path, clazz, aMethod) -> empty()
+                , (path, clazz, aMethod) -> emptyList()
                 , emptyList()
                 , (aPath, aClass, aMethod) -> emptyList()
         );
