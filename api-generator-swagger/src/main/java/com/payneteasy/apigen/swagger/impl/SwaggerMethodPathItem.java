@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -78,12 +79,17 @@ public class SwaggerMethodPathItem {
     }
 
     private ApiResponses createResponse(String aPath, Class<?> aClass, Method aMethod) {
+
+        Schema<?> schema = void.class.equals(aMethod.getReturnType())
+            ? null
+            : createSchema(aMethod.getReturnType(), "Return for " + aClass.getSimpleName() + "." + aMethod.getName() + "()");
+
         ApiResponses responses = new ApiResponses()
             .addApiResponse("200", new ApiResponse()
                 .description("Success response")
                 .content(new Content()
                     .addMediaType("application/json", new MediaType()
-                        .schema(createSchema(aMethod.getReturnType()))
+                        .schema(schema)
                     )
                 )
             );
@@ -105,7 +111,7 @@ public class SwaggerMethodPathItem {
     private Content errorJson(Class<?> aClass) {
         return new Content()
                 .addMediaType("application/json; charset=utf-8", new MediaType()
-                        .schema(createSchema(aClass))
+                        .schema(createSchema(aClass, "Error class " + aClass.getSimpleName()))
                 );
     }
 
@@ -119,7 +125,7 @@ public class SwaggerMethodPathItem {
             return new RequestBody()
                 .content(new Content()
                     .addMediaType("application/json", new MediaType()
-                        .schema(createSchema(oneArgument))
+                        .schema(createSchema(oneArgument, "One argument for method "))
                     )
                 );
         }

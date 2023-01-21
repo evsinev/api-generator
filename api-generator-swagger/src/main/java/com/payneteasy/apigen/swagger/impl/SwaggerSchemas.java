@@ -10,7 +10,7 @@ import java.util.Collection;
 
 public class SwaggerSchemas {
 
-    public static Schema<?> createSchema(Class<?> aClass) {
+    public static Schema<?> createSchema(Class<?> aClass, String aLocation) {
         PrimitiveType primitiveType = PrimitiveType.fromType(aClass);
 
         if(primitiveType != null) {
@@ -21,7 +21,7 @@ public class SwaggerSchemas {
             return new ObjectSchema().$ref("#/components/schemas/" + aClass.getSimpleName());
         }
 
-        throw new IllegalStateException("No any schema type for " + aClass);
+        throw new IllegalStateException("No any schema type for " + aClass + " : " + aLocation);
     }
 
     static boolean isOurType(Field field) {

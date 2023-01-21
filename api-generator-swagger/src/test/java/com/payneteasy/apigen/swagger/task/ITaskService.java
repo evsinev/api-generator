@@ -19,5 +19,6 @@ public interface ITaskService {
 
     VoidResponse saveTaskArgs(long aTaskId, String aTaskName);
 
+    void voidResponse();
 
 }
