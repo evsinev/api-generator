@@ -5,13 +5,17 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.payneteasy.apigen.swagger.impl.SwaggerSchemas.createSchema;
 
 
 public class SwaggerMethodPathItem {
@@ -20,7 +24,7 @@ public class SwaggerMethodPathItem {
     private final SwaggerBuilderStrategy.ISecurityItemExtractor         securityItemExtractor;
     private final SwaggerBuilderStrategy.IOperationDescriptionExtractor operationDescriptionExtractor;
     private final SwaggerBuilderStrategy.IAdditionalParameters          additionalParameters;
-    private final SwaggerBuilderStrategy.IErrorResponsesExtractor errorResponsesExtractor;
+    private final SwaggerBuilderStrategy.IErrorResponsesExtractor       errorResponsesExtractor;
 
     public SwaggerMethodPathItem(
               SwaggerBuilderStrategy.IOperationDescriptionExtractor aOperationDescriptionExtractor
@@ -63,8 +67,9 @@ public class SwaggerMethodPathItem {
         Operation operation = new Operation();
         operation.addTagsItem(clazz.getSimpleName());
 
-        if(!"VoidRequest".equals(getParameterName(aMethod))){
-            operation.requestBody(createRequestBody(aMethod));
+        MethodParameters parameters = getParameters(aMethod);
+        if(parameters.hasParameters()) {
+            operation.requestBody(createRequestBody(parameters));
         }
 
         operation.responses(createResponse(aPath, clazz, aMethod));
@@ -74,14 +79,14 @@ public class SwaggerMethodPathItem {
 
     private ApiResponses createResponse(String aPath, Class<?> aClass, Method aMethod) {
         ApiResponses responses = new ApiResponses()
-        .addApiResponse("200", new ApiResponse()
-            .description("Success response")
-            .content(new Content()
-                .addMediaType("application/json", new MediaType()
-                    .schema(new Schema().$ref("#/components/schemas/" + aMethod.getReturnType().getSimpleName()))
+            .addApiResponse("200", new ApiResponse()
+                .description("Success response")
+                .content(new Content()
+                    .addMediaType("application/json", new MediaType()
+                        .schema(createSchema(aMethod.getReturnType()))
+                    )
                 )
-            )
-        );
+            );
 
         errorResponsesExtractor
             .getErrorResponse(aPath, aClass, aMethod)
@@ -100,21 +105,45 @@ public class SwaggerMethodPathItem {
     private Content errorJson(Class<?> aClass) {
         return new Content()
                 .addMediaType("application/json; charset=utf-8", new MediaType()
-                        .schema(new Schema().$ref("#/components/schemas/" + aClass.getSimpleName()))
+                        .schema(createSchema(aClass))
                 );
     }
 
-    private RequestBody createRequestBody(Method aMethod) {
-        return new RequestBody()
+    private RequestBody createRequestBody(MethodParameters aParameters) {
+        if(!aParameters.hasParameters()) {
+            throw new IllegalStateException("No any parameters");
+        }
+
+        if(aParameters.getParameters().size() == 1) {
+            Class<?> oneArgument = aParameters.getParameters().get(0).getType();
+            return new RequestBody()
                 .content(new Content()
-                        .addMediaType("application/json", new MediaType()
-                                .schema(new Schema().$ref("#/components/schemas/" + getParameterName(aMethod)))
-                        )
+                    .addMediaType("application/json", new MediaType()
+                        .schema(createSchema(oneArgument))
+                    )
                 );
+        }
+
+        // todo create array of parameters
+        return null;
     }
 
     @Nonnull
-    private String getParameterName(Method aMethod) {
-        return aMethod.getParameterTypes()[0].getSimpleName();
+    private MethodParameters getParameters(Method aMethod) {
+        List<MethodParameter> args       = new ArrayList<>();
+        Parameter[]           parameters = aMethod.getParameters();
+
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            args.add(MethodParameter.builder()
+                .typeName ( parameter.getType().getSimpleName())
+                .type     ( parameter.getType() )
+                .index    ( i                   )
+                .name     ( parameter.getName() ) // compiler arguments should have '-parameters'
+                .build()
+            );
+        }
+
+        return new MethodParameters(args);
     }
 }

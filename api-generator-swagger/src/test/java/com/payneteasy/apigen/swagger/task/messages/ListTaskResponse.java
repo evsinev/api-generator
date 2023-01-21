@@ -1,6 +1,7 @@
 package com.payneteasy.apigen.swagger.task.messages;
 
 import com.payneteasy.apigen.swagger.task.model.TaskInfo;
+import com.payneteasy.apigen.swagger.task.model.TaskItem;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -13,5 +14,6 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 @Builder
 public class ListTaskResponse {
-    List<TaskInfo> tasks;
+    List<TaskItem> tasks;
+    TaskInfo       taskInfo;
 }

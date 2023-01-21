@@ -14,35 +14,38 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.payneteasy.apigen.core.util.Fields.getAllFields;
+import static com.payneteasy.apigen.swagger.impl.SwaggerSchemas.*;
 
 public class SwaggerMethodComponents {
 
     private final ModelConverters converters = ModelConverters.getInstance();
     private final Set<Class<?>>   added      = new HashSet<>();
     private final List<Class<?>>  errorClasses;
+    private final Components      components = new Components();
 
     public SwaggerMethodComponents(@Nonnull List<Class<?>> errorClasses) {
         this.errorClasses = errorClasses;
     }
 
     public Components createComponents(List<Class<?>> aInterfaces) {
-        Components components = new Components();
         for (Class<?> clazz : aInterfaces) {
             for (Method method : Methods.getAllMethods(clazz)) {
-                addTypes(components, method.getReturnType());
-                addTypes(components, method.getParameterTypes()[0]);
+                addTypes(method.getReturnType());
+                for (Class<?> parameterType : method.getParameterTypes()) {
+                    addTypes(parameterType);
+                }
             }
         }
 
 
         for (Class<?> errorClass : errorClasses) {
-            addTypes(components, errorClass);
+            addTypes(errorClass);
         }
 
         return components;
     }
 
-    private void addTypes(Components aComponents, Class<?> aType) {
+    private void addTypes(Class<?> aType) {
         if(added.contains(aType)) {
             return;
         }
@@ -51,24 +54,17 @@ public class SwaggerMethodComponents {
 
         Map<String, Schema> map = converters.read(aType);
         for (Map.Entry<String, Schema> entry : map.entrySet()) {
-            aComponents.addSchemas(entry.getKey(), entry.getValue());
+            components.addSchemas(entry.getKey(), entry.getValue());
         }
 
         for (Field field : getAllFields(aType)) {
             if(isOurType(field)) {
-                addTypes(aComponents, field.getType());
+                addTypes(field.getType());
+            } else if(isCollection(field.getType())) {
+                addTypes(getCollectionGenericType(field));
             }
         }
     }
 
-    private boolean isOurType(Field field) {
-        Class<?> type = field.getType();
-
-        if(type.isPrimitive()) {
-            return false;
-        }
-
-        return !type.getName().startsWith("java");
-    }
 
 }

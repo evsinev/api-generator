@@ -7,6 +7,12 @@ import com.payneteasy.apigen.swagger.task.messages.VoidResponse;
 
 public interface ITaskService {
 
+    ListTaskResponse listTasksMulti(ListTaskRequest aFirst, ListTaskRequest aSecond);
+
+    ListTaskResponse multiArgs(long aFirst, String aSecond);
+
+    ListTaskResponse listTasksNoArgs();
+
     ListTaskResponse listTasks(ListTaskRequest aRequest);
 
     VoidResponse saveTask(SaveTaskRequest aRequest);
