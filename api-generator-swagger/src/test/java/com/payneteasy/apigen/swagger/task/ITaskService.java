@@ -4,6 +4,10 @@ import com.payneteasy.apigen.swagger.task.messages.ListTaskRequest;
 import com.payneteasy.apigen.swagger.task.messages.ListTaskResponse;
 import com.payneteasy.apigen.swagger.task.messages.SaveTaskRequest;
 import com.payneteasy.apigen.swagger.task.messages.VoidResponse;
+import com.payneteasy.apigen.swagger.task.model.TaskItem;
+
+import java.io.InputStream;
+import java.util.List;
 
 public interface ITaskService {
 
@@ -20,5 +24,9 @@ public interface ITaskService {
     VoidResponse saveTaskArgs(long aTaskId, String aTaskName);
 
     void voidResponse();
+
+    VoidResponse getFromInputStream(InputStream aInputStream);
+
+    List<TaskItem> getListTaskItem();
 
 }

@@ -1,6 +1,7 @@
 package com.payneteasy.apigen.swagger.impl;
 
 import io.swagger.v3.core.util.PrimitiveType;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 
@@ -19,6 +20,10 @@ public class SwaggerSchemas {
 
         if(isOurType(aClass)) {
             return new ObjectSchema().$ref("#/components/schemas/" + aClass.getSimpleName());
+        }
+
+        if(isCollection(aClass)) {
+            return new ArraySchema();
         }
 
         throw new IllegalStateException("No any schema type for " + aClass + " : " + aLocation);

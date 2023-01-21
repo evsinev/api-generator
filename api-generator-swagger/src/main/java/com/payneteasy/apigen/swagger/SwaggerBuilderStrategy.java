@@ -15,6 +15,10 @@ import static lombok.AccessLevel.PRIVATE;
 
 public interface SwaggerBuilderStrategy {
 
+    interface IMethodAcceptor {
+        boolean isMethodAccepted(Class<?> clazz, Method aMethod);
+    }
+
     interface IAdditionalParameters {
         List<Parameter> getAdditionalParameters(String path, Class<?> clazz, Method aMethod);
     }

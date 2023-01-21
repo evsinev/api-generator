@@ -25,9 +25,11 @@ public class SwaggerBuilder {
     private final IPathExtractor methodPathExtractor;
     private final SwaggerMethodPathItem                 swaggerMethodPathItem;
     private final List<Class<?>>                        errorClasses;
+    private final IMethodAcceptor                       methodAcceptor;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
+            , @Nonnull IMethodAcceptor                aMethodAcceptor
             , @Nonnull List<Class<?>>                 aInterfaces
             , @Nonnull IPathExtractor                 aMethodPathExtractor
             , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
@@ -40,6 +42,7 @@ public class SwaggerBuilder {
         api                     = aOpenApi;
         methodPathExtractor     = aMethodPathExtractor;
         errorClasses            = aErrorClasses;
+        methodAcceptor          = aMethodAcceptor;
 
         swaggerMethodPathItem = new SwaggerMethodPathItem(
                   aOperationDescriptionExtractor
@@ -54,7 +57,7 @@ public class SwaggerBuilder {
         api
             .tags(getTags(interfaces))
             .paths(createPaths(interfaces))
-            .setComponents(new SwaggerMethodComponents(errorClasses)
+            .setComponents(new SwaggerMethodComponents(errorClasses, methodAcceptor)
                 .createComponents(interfaces)
             );
 
@@ -65,6 +68,11 @@ public class SwaggerBuilder {
         SortedPaths paths = new SortedPaths();
         for (Class<?> clazz : aInterfaces) {
             for (Method method : Methods.getAllMethods(clazz)) {
+
+                if(!methodAcceptor.isMethodAccepted(clazz, method)) {
+                    continue;
+                }
+
                 paths.addPathItem(
                           methodPathExtractor.getMethodPath(clazz, method)
                         , swaggerMethodPathItem.createPathItem(clazz, method)

@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Collections;
 
 import static java.util.Collections.emptyList;
@@ -23,6 +25,7 @@ public class SwaggerBuilderTest {
     public void buildYaml() {
         SwaggerBuilder swaggerBuilder = new SwaggerBuilder(
                 new OpenAPI()
+                , this::acceptMethod
                 , Collections.singletonList(ITaskService.class)
                 , (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName()
                 , (aClass, aMethod) -> empty()
@@ -44,5 +47,14 @@ public class SwaggerBuilderTest {
 
         assertTrue("Class TaskItem should be in ref", yaml.contains("$ref: '#/components/schemas/TaskItem'"));
         assertTrue("Class TaskItem should have schema", yaml.contains("TaskItem:"));
+    }
+
+    private boolean acceptMethod(Class<?> aClass, Method method) {
+        for (Class<?> type : method.getParameterTypes()) {
+            if(InputStream.class.isAssignableFrom(type)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
