@@ -1,7 +1,6 @@
 package com.payneteasy.apigen.swagger.impl;
 
 import com.payneteasy.apigen.core.util.Methods;
-import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy;
 import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy.IMethodAcceptor;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
@@ -10,6 +9,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,41 +42,50 @@ public class SwaggerMethodComponents {
                 }
 
                 try {
-                    addTypes(method.getReturnType());
-                    for (Class<?> parameterType : method.getParameterTypes()) {
-                        addTypes(parameterType);
+                    // return type
+                    addTypes(method.getReturnType(), method.getGenericReturnType());
+
+                    // parameters
+                    for(int i=0; i<method.getParameterTypes().length; i++) {
+                        addTypes(method.getParameterTypes()[i], method.getGenericParameterTypes()[i]);
                     }
                 } catch (Exception e) {
-                    LOG.error("Cannot processes {}.{}()", clazz.getSimpleName(), method.getName());
+                    LOG.error("Cannot processes {}.{}()", clazz.getSimpleName(), method.getName(), e);
                 }
             }
         }
 
 
         for (Class<?> errorClass : errorClasses) {
-            addTypes(errorClass);
+            addTypes(errorClass, null);
         }
 
         return components;
     }
 
-    private void addTypes(Class<?> aType) {
-        if(added.contains(aType)) {
+    private void addTypes(Class<?> aClass, Type aType) {
+        if(SwaggerSchemas.isCollection(aClass)) {
+            Class<?> collectionGenericType = getCollectionGenericType(aType);
+            addTypes(collectionGenericType, null);
             return;
         }
 
-        added.add(aType);
+        if(added.contains(aClass)) {
+            return;
+        }
 
-        Map<String, Schema> map = converters.read(aType);
+        added.add(aClass);
+
+        Map<String, Schema> map = converters.read(aClass);
         for (Map.Entry<String, Schema> entry : map.entrySet()) {
             components.addSchemas(entry.getKey(), entry.getValue());
         }
 
-        for (Field field : getAllFields(aType)) {
+        for (Field field : getAllFields(aClass)) {
             if(isOurType(field)) {
-                addTypes(field.getType());
+                addTypes(field.getType(), field.getGenericType());
             } else if(isCollection(field.getType())) {
-                addTypes(getCollectionGenericType(field));
+                addTypes(getCollectionGenericType(field), field.getGenericType());
             }
         }
     }

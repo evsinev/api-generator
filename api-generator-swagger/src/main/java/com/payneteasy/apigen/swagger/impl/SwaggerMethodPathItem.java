@@ -82,7 +82,7 @@ public class SwaggerMethodPathItem {
 
         Schema<?> schema = void.class.equals(aMethod.getReturnType())
             ? null
-            : createSchema(aMethod.getReturnType(), "Return for " + aClass.getSimpleName() + "." + aMethod.getName() + "()");
+            : createSchema(aMethod.getReturnType(), aMethod.getGenericReturnType(), "Return for " + aClass.getSimpleName() + "." + aMethod.getName() + "()");
 
         ApiResponses responses = new ApiResponses()
             .addApiResponse("200", new ApiResponse()

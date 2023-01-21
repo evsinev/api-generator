@@ -47,6 +47,9 @@ public class SwaggerBuilderTest {
 
         assertTrue("Class TaskItem should be in ref", yaml.contains("$ref: '#/components/schemas/TaskItem'"));
         assertTrue("Class TaskItem should have schema", yaml.contains("TaskItem:"));
+
+        assertTrue("Class TaskItem should be in ref", yaml.contains("$ref: '#/components/schemas/TaskItemFromList'"));
+        assertTrue("Class TaskItem should have schema", yaml.contains("TaskItemFromList:"));
     }
 
     private boolean acceptMethod(Class<?> aClass, Method method) {

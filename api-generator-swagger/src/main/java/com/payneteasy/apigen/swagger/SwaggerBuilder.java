@@ -8,6 +8,8 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
@@ -19,6 +21,8 @@ import java.util.TreeSet;
 import static java.util.stream.Collectors.toList;
 
 public class SwaggerBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger( SwaggerBuilder.class );
 
     private final OpenAPI                               api;
     private final List<Class<?>>                        interfaces;
@@ -73,10 +77,14 @@ public class SwaggerBuilder {
                     continue;
                 }
 
-                paths.addPathItem(
-                          methodPathExtractor.getMethodPath(clazz, method)
-                        , swaggerMethodPathItem.createPathItem(clazz, method)
-                );
+                try {
+                    paths.addPathItem(
+                              methodPathExtractor.getMethodPath(clazz, method)
+                            , swaggerMethodPathItem.createPathItem(clazz, method)
+                    );
+                } catch (Exception e) {
+                    LOG.error("Cannot create path items for method {}.{}()", clazz.getSimpleName(), method.getName());
+                }
             }
         }
         return paths;

@@ -16,6 +16,7 @@ public class MethodParameters {
 
 
     public boolean hasParameters() {
-        return parameters.size() > 0 && !parameters.get(0).getType().equals("VoidRequest");
+        return parameters.size() > 0
+                && !parameters.get(0).getType().getSimpleName().equals("VoidRequest");
     }
 }

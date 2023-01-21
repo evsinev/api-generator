@@ -7,11 +7,16 @@ import io.swagger.v3.oas.models.media.Schema;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 
 public class SwaggerSchemas {
 
     public static Schema<?> createSchema(Class<?> aClass, String aLocation) {
+        return createSchema(aClass, null, aLocation);
+    }
+
+    public static Schema<?> createSchema(Class<?> aClass, Type aType, String aLocation) {
         PrimitiveType primitiveType = PrimitiveType.fromType(aClass);
 
         if(primitiveType != null) {
@@ -23,7 +28,11 @@ public class SwaggerSchemas {
         }
 
         if(isCollection(aClass)) {
-            return new ArraySchema();
+            return new ArraySchema()
+                    .items(createSchema(
+                            getCollectionGenericType(aType)
+                            , aLocation + " is collection"
+                    ));
         }
 
         throw new IllegalStateException("No any schema type for " + aClass + " : " + aLocation);
@@ -48,10 +57,11 @@ public class SwaggerSchemas {
 
     static Class<?> getCollectionGenericType(Field aField) {
         ParameterizedType genericType = (ParameterizedType) aField.getGenericType();
-        if(genericType == null) {
-            throw new IllegalStateException("Generic type is null for field " + aField.getName());
-        }
+        return (Class<?>) genericType.getActualTypeArguments()[0];
+    }
 
+    static Class<?> getCollectionGenericType(Type aType) {
+        ParameterizedType genericType = (ParameterizedType)aType ;
         return (Class<?>) genericType.getActualTypeArguments()[0];
     }
 }
