@@ -29,6 +29,7 @@ public class SwaggerBuilderTest {
                 , Collections.singletonList(ITaskService.class)
                 , (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName()
                 , (aClass, aMethod) -> empty()
+                , (aClass) -> empty()
                 , new MarkdownHeaders(new File("src/test/resources/sample-api.md"))
                 , (path, clazz, aMethod) -> emptyList()
                 , emptyList()

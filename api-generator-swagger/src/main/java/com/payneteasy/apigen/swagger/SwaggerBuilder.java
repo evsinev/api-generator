@@ -24,12 +24,13 @@ public class SwaggerBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger( SwaggerBuilder.class );
 
-    private final OpenAPI                               api;
-    private final List<Class<?>>                        interfaces;
-    private final IPathExtractor methodPathExtractor;
-    private final SwaggerMethodPathItem                 swaggerMethodPathItem;
-    private final List<Class<?>>                        errorClasses;
-    private final IMethodAcceptor                       methodAcceptor;
+    private final OpenAPI                      api;
+    private final List<Class<?>>               interfaces;
+    private final IPathExtractor               methodPathExtractor;
+    private final SwaggerMethodPathItem        swaggerMethodPathItem;
+    private final List<Class<?>>               errorClasses;
+    private final IMethodAcceptor              methodAcceptor;
+    private final IServiceDescriptionExtractor serviceDescription;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
@@ -37,19 +38,22 @@ public class SwaggerBuilder {
             , @Nonnull List<Class<?>>                 aInterfaces
             , @Nonnull IPathExtractor                 aMethodPathExtractor
             , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
+            , @Nonnull IServiceDescriptionExtractor   aServiceDescriptionExtractor
             , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
             , @Nonnull IAdditionalParameters          aAdditionalParameters
             , @Nonnull List<Class<?>>                 aErrorClasses
             , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
     ) {
-        interfaces              = aInterfaces;
-        api                     = aOpenApi;
-        methodPathExtractor     = aMethodPathExtractor;
-        errorClasses            = aErrorClasses;
-        methodAcceptor          = aMethodAcceptor;
+        interfaces          = aInterfaces;
+        api                 = aOpenApi;
+        methodPathExtractor = aMethodPathExtractor;
+        errorClasses        = aErrorClasses;
+        methodAcceptor      = aMethodAcceptor;
+        serviceDescription  = aServiceDescriptionExtractor;
 
         swaggerMethodPathItem = new SwaggerMethodPathItem(
-                  aOperationDescriptionExtractor
+                  aServiceDescriptionExtractor
+                , aOperationDescriptionExtractor
                 , aMethodPathExtractor
                 , aSecurityItemExtractor
                 , aAdditionalParameters
@@ -94,7 +98,7 @@ public class SwaggerBuilder {
         return aInterfaces.stream()
                 .map(trait -> new Tag()
                         .name(trait.getSimpleName())
-                        .description(trait.getSimpleName())
+                        .description(serviceDescription.getServiceDescription(trait).orElse(trait.getSimpleName()))
                 )
                 .collect(toList());
     }

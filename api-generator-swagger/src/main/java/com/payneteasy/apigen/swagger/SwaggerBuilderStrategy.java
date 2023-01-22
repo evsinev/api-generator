@@ -31,6 +31,10 @@ public interface SwaggerBuilderStrategy {
         Optional<String> getOperationDescription(String aPath, Class<?> aClass, Method aMethod);
     }
 
+    interface IServiceDescriptionExtractor {
+        Optional<String> getServiceDescription(Class<?> aClass);
+    }
+
     interface IPathExtractor {
         @Nonnull
         String getMethodPath(Class<?> aClass, Method aMethod);

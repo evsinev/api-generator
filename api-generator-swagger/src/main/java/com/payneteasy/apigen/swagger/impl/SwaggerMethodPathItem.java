@@ -1,6 +1,6 @@
 package com.payneteasy.apigen.swagger.impl;
 
-import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy;
+import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy.*;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
@@ -21,18 +21,19 @@ import static com.payneteasy.apigen.swagger.impl.SwaggerSchemas.createSchema;
 
 public class SwaggerMethodPathItem {
 
-    private final SwaggerBuilderStrategy.IPathExtractor                 pathExtractor;
-    private final SwaggerBuilderStrategy.ISecurityItemExtractor         securityItemExtractor;
-    private final SwaggerBuilderStrategy.IOperationDescriptionExtractor operationDescriptionExtractor;
-    private final SwaggerBuilderStrategy.IAdditionalParameters          additionalParameters;
-    private final SwaggerBuilderStrategy.IErrorResponsesExtractor       errorResponsesExtractor;
+    private final IPathExtractor                 pathExtractor;
+    private final ISecurityItemExtractor         securityItemExtractor;
+    private final IOperationDescriptionExtractor operationDescriptionExtractor;
+    private final IAdditionalParameters          additionalParameters;
+    private final IErrorResponsesExtractor       errorResponsesExtractor;
 
     public SwaggerMethodPathItem(
-              SwaggerBuilderStrategy.IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , SwaggerBuilderStrategy.IPathExtractor pathExtractor
-            , SwaggerBuilderStrategy.ISecurityItemExtractor securityItemExtractor
-            , SwaggerBuilderStrategy.IAdditionalParameters aAdditionalParameters
-            , SwaggerBuilderStrategy.IErrorResponsesExtractor aErrorResponsesExtractor
+              IServiceDescriptionExtractor   aServiceDescriptionExtractor
+            , IOperationDescriptionExtractor aOperationDescriptionExtractor
+            , IPathExtractor                 pathExtractor
+            , ISecurityItemExtractor         securityItemExtractor
+            , IAdditionalParameters          aAdditionalParameters
+            , IErrorResponsesExtractor       aErrorResponsesExtractor
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
