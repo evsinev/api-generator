@@ -47,6 +47,8 @@ public class SwaggerMethodPathItem {
         PathItem  item      = new PathItem();
         Operation operation = getOperation(path, clazz, aMethod);
 
+        operation.summary(aMethod.getName());
+
         item.operation(PathItem.HttpMethod.POST, operation);
 
         securityItemExtractor
