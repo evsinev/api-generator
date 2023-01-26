@@ -24,7 +24,7 @@ public class SwaggerMethodPathItem {
     private final IPathExtractor                 pathExtractor;
     private final ISecurityItemExtractor         securityItemExtractor;
     private final IOperationDescriptionExtractor operationDescriptionExtractor;
-    private final IAdditionalParameters          additionalParameters;
+    private final IPathParameters                additionalParameters;
     private final IErrorResponsesExtractor       errorResponsesExtractor;
 
     public SwaggerMethodPathItem(
@@ -32,7 +32,7 @@ public class SwaggerMethodPathItem {
             , IOperationDescriptionExtractor aOperationDescriptionExtractor
             , IPathExtractor                 pathExtractor
             , ISecurityItemExtractor         securityItemExtractor
-            , IAdditionalParameters          aAdditionalParameters
+            , IPathParameters aAdditionalParameters
             , IErrorResponsesExtractor       aErrorResponsesExtractor
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
@@ -44,30 +44,20 @@ public class SwaggerMethodPathItem {
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
         String    path      = pathExtractor.getMethodPath(clazz, aMethod);
-        PathItem  item      = new PathItem();
-        Operation operation = getOperation(path, clazz, aMethod);
+        Operation operation = createOperation(path, clazz, aMethod);
 
-        operation.summary(aMethod.getName());
-
+        PathItem item = new PathItem();
         item.operation(PathItem.HttpMethod.POST, operation);
 
-        securityItemExtractor
-                .getSecurityItem(clazz, aMethod)
-                .ifPresent(operation::addSecurityItem);
-
-        operationDescriptionExtractor
-                .getOperationDescription(path, clazz, aMethod)
-                .ifPresent(operation::description);
-
         additionalParameters
-                .getAdditionalParameters(path, clazz, aMethod)
-                .forEach(item::addParametersItem);
+            .getPathParameters(path, clazz, aMethod)
+            .forEach(item::addParametersItem);
 
         return item;
     }
 
     @Nonnull
-    private Operation getOperation(String aPath, Class<?> clazz, Method aMethod) {
+    private Operation createOperation(String aPath, Class<?> clazz, Method aMethod) {
         Operation operation = new Operation();
         operation.addTagsItem(clazz.getSimpleName());
 
@@ -77,6 +67,16 @@ public class SwaggerMethodPathItem {
         }
 
         operation.responses(createResponse(aPath, clazz, aMethod));
+
+        operation.summary(aMethod.getName());
+
+        securityItemExtractor
+                .getSecurityItem(clazz, aMethod)
+                .ifPresent(operation::addSecurityItem);
+
+        operationDescriptionExtractor
+                .getOperationDescription(aPath, clazz, aMethod)
+                .ifPresent(operation::description);
 
         return operation;
     }
@@ -123,12 +123,18 @@ public class SwaggerMethodPathItem {
             throw new IllegalStateException("No any parameters");
         }
 
+        // one argument
         if(aParameters.getParameters().size() == 1) {
-            Class<?> oneArgument = aParameters.getParameters().get(0).getType();
+            MethodParameter methodParameter = aParameters.getParameters().get(0);
+            Class<?>        oneArgument     = methodParameter.getType();
             return new RequestBody()
                 .content(new Content()
                     .addMediaType("application/json", new MediaType()
-                        .schema(createSchema(oneArgument, "One argument for method "))
+                        .schema(
+                                createSchema(oneArgument, "One argument for method ")
+                                    .description(methodParameter.getName())
+                        )
+
                     )
                 );
         }

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Collection;
 
 public class SwaggerSchemas {
@@ -62,6 +63,19 @@ public class SwaggerSchemas {
 
     static Class<?> getCollectionGenericType(Type aType) {
         ParameterizedType genericType = (ParameterizedType)aType ;
-        return (Class<?>) genericType.getActualTypeArguments()[0];
+
+        Type firstArgument = genericType.getActualTypeArguments()[0];
+
+        if(firstArgument instanceof Class<?>) {
+            return (Class<?>) firstArgument;
+        }
+
+        if(firstArgument instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) firstArgument;
+            return (Class<?>) wildcardType.getUpperBounds()[0];
+        }
+
+        throw new IllegalStateException("Strange argument" + firstArgument + " for type " + aType);
+//        return (Class<?>) genericType.getActualTypeArguments()[0];
     }
 }

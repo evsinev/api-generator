@@ -1,5 +1,6 @@
 package com.payneteasy.apigen.swagger;
 
+import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import lombok.Builder;
@@ -19,8 +20,8 @@ public interface SwaggerBuilderStrategy {
         boolean isMethodAccepted(Class<?> clazz, Method aMethod);
     }
 
-    interface IAdditionalParameters {
-        List<Parameter> getAdditionalParameters(String path, Class<?> clazz, Method aMethod);
+    interface IPathParameters {
+        List<Parameter> getPathParameters(String path, Class<?> clazz, Method aMethod);
     }
 
     interface IErrorResponsesExtractor {
@@ -42,6 +43,10 @@ public interface SwaggerBuilderStrategy {
 
     interface ISecurityItemExtractor {
         Optional<SecurityRequirement> getSecurityItem(Class<?> aClass, Method aMethod);
+    }
+
+    interface IServiceAddListener {
+        void onServiceAdd(Paths aPaths, Class<?> aClass);
     }
 
     @Data

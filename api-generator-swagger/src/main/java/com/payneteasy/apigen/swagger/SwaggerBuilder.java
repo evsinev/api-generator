@@ -4,7 +4,9 @@ import com.payneteasy.apigen.core.util.Methods;
 import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy.*;
 import com.payneteasy.apigen.swagger.impl.SwaggerMethodComponents;
 import com.payneteasy.apigen.swagger.impl.SwaggerMethodPathItem;
+import com.payneteasy.apigen.swagger.impl.sorted.SortedPaths;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -13,10 +15,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import static java.util.stream.Collectors.toList;
 
@@ -31,6 +32,7 @@ public class SwaggerBuilder {
     private final List<Class<?>>               errorClasses;
     private final IMethodAcceptor              methodAcceptor;
     private final IServiceDescriptionExtractor serviceDescription;
+    private final IServiceAddListener          serviceAddListener;
 
     public SwaggerBuilder(
               @Nonnull OpenAPI                        aOpenApi
@@ -40,16 +42,18 @@ public class SwaggerBuilder {
             , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
             , @Nonnull IServiceDescriptionExtractor   aServiceDescriptionExtractor
             , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , @Nonnull IAdditionalParameters          aAdditionalParameters
+            , @Nonnull IPathParameters aAdditionalParameters
             , @Nonnull List<Class<?>>                 aErrorClasses
             , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
+            , @Nonnull IServiceAddListener            aServiceAddListener
     ) {
-        interfaces          = aInterfaces;
+        interfaces          = createSortedArray(aInterfaces);
         api                 = aOpenApi;
         methodPathExtractor = aMethodPathExtractor;
         errorClasses        = aErrorClasses;
         methodAcceptor      = aMethodAcceptor;
         serviceDescription  = aServiceDescriptionExtractor;
+        serviceAddListener  = aServiceAddListener;
 
         swaggerMethodPathItem = new SwaggerMethodPathItem(
                   aServiceDescriptionExtractor
@@ -59,6 +63,12 @@ public class SwaggerBuilder {
                 , aAdditionalParameters
                 , aErrorResponsesExtractor
         );
+    }
+
+    private static List<Class<?>> createSortedArray(List<Class<?>> aInterfaces) {
+        ArrayList<Class<?>> classes = new ArrayList<>(aInterfaces);
+        classes.sort(Comparator.comparing(Class::getSimpleName));
+        return classes;
     }
 
     public OpenAPI buildOpenApiModel() {
@@ -75,6 +85,9 @@ public class SwaggerBuilder {
     private Paths createPaths(List<Class<?>> aInterfaces) {
         SortedPaths paths = new SortedPaths();
         for (Class<?> clazz : aInterfaces) {
+
+            serviceAddListener.onServiceAdd(paths, clazz);
+
             for (Method method : Methods.getAllMethods(clazz)) {
 
                 if(!methodAcceptor.isMethodAccepted(clazz, method)) {
@@ -94,6 +107,17 @@ public class SwaggerBuilder {
         return paths;
     }
 
+    private PathItem createOverviewPathItem(Class<?> aClass) {
+        Operation operation = new Operation();
+        operation.addTagsItem(aClass.getSimpleName());
+        operation.summary("Overview");
+        serviceDescription.getServiceDescription(aClass).ifPresent(operation::description);
+
+        PathItem item = new PathItem();
+        item.operation(PathItem.HttpMethod.HEAD, operation);
+        return item;
+    }
+
     private List<Tag> getTags(List<Class<?>> aInterfaces) {
         return aInterfaces.stream()
                 .map(trait -> new Tag()
@@ -103,42 +127,4 @@ public class SwaggerBuilder {
                 .collect(toList());
     }
 
-    private static class SortedPaths extends Paths {
-        @Override
-        public Set<Map.Entry<String, PathItem>> entrySet() {
-            TreeSet<Map.Entry<String, PathItem>> set = new TreeSet<>();
-            for (Map.Entry<String, PathItem> entry : super.entrySet()) {
-                set.add(new SortedMapEntry(entry));
-            }
-            return set;
-        }
-    }
-
-    private static class SortedMapEntry implements Map.Entry<String, PathItem>, Comparable<SortedMapEntry> {
-        private final Map.Entry<String, PathItem> delegate;
-
-        public SortedMapEntry(Map.Entry<String, PathItem> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public int compareTo(@Nonnull SwaggerBuilder.SortedMapEntry another) {
-            return delegate.getKey().compareTo(another.getKey());
-        }
-
-        @Override
-        public String getKey() {
-            return delegate.getKey();
-        }
-
-        @Override
-        public PathItem getValue() {
-            return delegate.getValue();
-        }
-
-        @Override
-        public PathItem setValue(PathItem value) {
-            return delegate.setValue(value);
-        }
-    }
 }

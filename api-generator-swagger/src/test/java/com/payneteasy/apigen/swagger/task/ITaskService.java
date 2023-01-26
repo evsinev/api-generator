@@ -6,6 +6,8 @@ import com.payneteasy.apigen.swagger.task.messages.SaveTaskRequest;
 import com.payneteasy.apigen.swagger.task.messages.VoidResponse;
 import com.payneteasy.apigen.swagger.task.model.TaskItem;
 import com.payneteasy.apigen.swagger.task.model.TaskItemFromList;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Positive;
 
 import java.io.InputStream;
 import java.util.List;
@@ -29,5 +31,9 @@ public interface ITaskService {
     VoidResponse getFromInputStream(InputStream aInputStream);
 
     List<TaskItemFromList> getListTaskItem();
+
+    List<? extends TaskItemFromList> getListTaskItemWithExtend();
+
+    void onePrimitiveArgument(int aEndpointId);
 
 }
