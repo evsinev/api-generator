@@ -3,6 +3,7 @@ package com.payneteasy.apigen.swagger.impl;
 import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy.*;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
@@ -25,21 +26,24 @@ public class SwaggerMethodPathItem {
     private final ISecurityItemExtractor         securityItemExtractor;
     private final IOperationDescriptionExtractor operationDescriptionExtractor;
     private final IPathParameters                additionalParameters;
-    private final IErrorResponsesExtractor       errorResponsesExtractor;
+    private final IErrorResponsesExtractor errorResponsesExtractor;
+    private final IResponseExamples        hasResponseExample;
 
     public SwaggerMethodPathItem(
               IServiceDescriptionExtractor   aServiceDescriptionExtractor
             , IOperationDescriptionExtractor aOperationDescriptionExtractor
             , IPathExtractor                 pathExtractor
             , ISecurityItemExtractor         securityItemExtractor
-            , IPathParameters aAdditionalParameters
+            , IPathParameters                aAdditionalParameters
             , IErrorResponsesExtractor       aErrorResponsesExtractor
+            , IResponseExamples aHasResponseExample
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
         this.securityItemExtractor    = securityItemExtractor;
         additionalParameters          = aAdditionalParameters;
         errorResponsesExtractor       = aErrorResponsesExtractor;
+        hasResponseExample            = aHasResponseExample;
     }
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
@@ -87,14 +91,35 @@ public class SwaggerMethodPathItem {
             ? null
             : createSchema(aMethod.getReturnType(), aMethod.getGenericReturnType(), "Return for " + aClass.getSimpleName() + "." + aMethod.getName() + "()");
 
+
+        MediaType successMediaType = new MediaType().schema(schema);
+        List<String> responseExamples = hasResponseExample.getResponseExamples(aPath, aClass, aMethod);
+        for (String responseExample : responseExamples) {
+            successMediaType.addExamples(
+                    responseExample
+                    , new Example()
+                            .$ref(
+                                    "#/components/examples/"
+                                    + aClass.getSimpleName()
+                                    + "."
+                                    + aMethod.getName()
+                                    + ".Response."
+                                    + responseExample
+                            )
+            );
+        }
+
         ApiResponses responses = new ApiResponses()
             .addApiResponse("200", new ApiResponse()
                 .description("Success response")
                 .content(new Content()
-                    .addMediaType("application/json", new MediaType()
-                        .schema(schema)
+                    .addMediaType(
+                            "application/json"
+                            , successMediaType
                     )
+
                 )
+
             );
 
         errorResponsesExtractor
