@@ -36,6 +36,7 @@ public class SwaggerBuilderTest {
                 , (aPath, aClass, aMethod) -> emptyList()
                 , (aPaths, aClass) -> {}
                 , (aPath, aClass, aMethod) -> emptyList()
+                , (aPath, aClass, aMethod) -> emptyList()
         );
 
         OpenAPI openAPI = swaggerBuilder.buildOpenApiModel();

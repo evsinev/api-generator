@@ -26,8 +26,9 @@ public class SwaggerMethodPathItem {
     private final ISecurityItemExtractor         securityItemExtractor;
     private final IOperationDescriptionExtractor operationDescriptionExtractor;
     private final IPathParameters                additionalParameters;
-    private final IErrorResponsesExtractor errorResponsesExtractor;
-    private final IResponseExamples        hasResponseExample;
+    private final IErrorResponsesExtractor       errorResponsesExtractor;
+    private final IRequestExamples  requestExample;
+    private final IResponseExamples responseExamples;
 
     public SwaggerMethodPathItem(
               IServiceDescriptionExtractor   aServiceDescriptionExtractor
@@ -36,14 +37,16 @@ public class SwaggerMethodPathItem {
             , ISecurityItemExtractor         securityItemExtractor
             , IPathParameters                aAdditionalParameters
             , IErrorResponsesExtractor       aErrorResponsesExtractor
-            , IResponseExamples aHasResponseExample
+            , IRequestExamples               aRequestExamples
+            , IResponseExamples              aResponseExamples
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
         this.securityItemExtractor    = securityItemExtractor;
         additionalParameters          = aAdditionalParameters;
         errorResponsesExtractor       = aErrorResponsesExtractor;
-        hasResponseExample            = aHasResponseExample;
+        requestExample                = aRequestExamples;
+        responseExamples              = aResponseExamples;
     }
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
@@ -67,7 +70,7 @@ public class SwaggerMethodPathItem {
 
         MethodParameters parameters = getParameters(aMethod);
         if(parameters.hasParameters()) {
-            operation.requestBody(createRequestBody(parameters));
+            operation.requestBody(createRequestBody(parameters, aPath, clazz, aMethod));
         }
 
         operation.responses(createResponse(aPath, clazz, aMethod));
@@ -93,7 +96,7 @@ public class SwaggerMethodPathItem {
 
 
         MediaType successMediaType = new MediaType().schema(schema);
-        List<String> responseExamples = hasResponseExample.getResponseExamples(aPath, aClass, aMethod);
+        List<String> responseExamples = this.responseExamples.getResponseExamples(aPath, aClass, aMethod);
         for (String responseExample : responseExamples) {
             successMediaType.addExamples(
                     responseExample
@@ -143,7 +146,7 @@ public class SwaggerMethodPathItem {
                 );
     }
 
-    private RequestBody createRequestBody(MethodParameters aParameters) {
+    private RequestBody createRequestBody(MethodParameters aParameters, String aPath, Class<?> aClass, Method aMethod) {
         if(!aParameters.hasParameters()) {
             throw new IllegalStateException("No any parameters");
         }
@@ -152,9 +155,26 @@ public class SwaggerMethodPathItem {
         if(aParameters.getParameters().size() == 1) {
             MethodParameter methodParameter = aParameters.getParameters().get(0);
             Class<?>        oneArgument     = methodParameter.getType();
+            MediaType       mediaType       = new MediaType();
+
+            for (String requestExample : requestExample.getRequestExamples(aPath, aClass, aMethod)) {
+                mediaType.addExamples(
+                        requestExample
+                        , new Example()
+                                .$ref(
+                                        "#/components/examples/"
+                                                + aClass.getSimpleName()
+                                                + "."
+                                                + aMethod.getName()
+                                                + ".Request."
+                                                + requestExample
+                                )
+                );
+            }
+
             return new RequestBody()
                 .content(new Content()
-                    .addMediaType("application/json", new MediaType()
+                    .addMediaType("application/json", mediaType
                         .schema(
                                 createSchema(oneArgument, "One argument for method ")
                                     .description(methodParameter.getName())

@@ -46,6 +46,7 @@ public class SwaggerBuilder {
             , @Nonnull List<Class<?>>                 aErrorClasses
             , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
             , @Nonnull IServiceAddListener            aServiceAddListener
+            , @Nonnull IRequestExamples               aRequestExamples
             , @Nonnull IResponseExamples              aResponseExamples
     ) {
         interfaces          = createSortedArray(aInterfaces);
@@ -63,6 +64,7 @@ public class SwaggerBuilder {
                 , aSecurityItemExtractor
                 , aAdditionalParameters
                 , aErrorResponsesExtractor
+                , aRequestExamples
                 , aResponseExamples
         );
     }
