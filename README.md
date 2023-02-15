@@ -46,31 +46,19 @@
 <dependency>
     <groupId>com.payneteasy.api-generator</groupId>
     <artifactId>api-generator-swagger</artifactId>
-    <version>1.0-8</version>
+    <version>1.0-9</version>
 </dependency>
 ```
 
 ### Create yaml
 
 ```java
-SwaggerBuilder swaggerBuilder = new SwaggerBuilder(
-        new OpenAPI()
-        , this::acceptMethod
-        , Collections.singletonList(ITaskService.class)
-        , (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName()
-        , (aClass, aMethod) -> empty()
-        , (aClass) -> empty()
-        , new MarkdownHeaders(new File("src/test/resources/sample-api.md"))
-        , (path, clazz, aMethod) -> emptyList()
-        , emptyList()
-        , (aPath, aClass, aMethod) -> emptyList()
-        , (aPaths, aClass) -> {}
-        , (aPath, aClass, aMethod) -> emptyList()
-        , (aPath, aClass, aMethod) -> emptyList()
-);
+OpenAPI api = SwaggerBuilder.builder()
+    .interfaces(Collections.singletonList(ITaskService.class))
+    .build()
+    .buildOpenApiModel();
 
-OpenAPI openAPI = swaggerBuilder.buildOpenApiModel();
-String  yaml    = Yaml.pretty(openAPI);
+String yaml = Yaml.pretty(api);
 ```
 
 ## License
