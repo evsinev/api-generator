@@ -56,6 +56,15 @@ public class SwaggerBuilderTest {
         assertTrue("Class TaskItem should have schema", yaml.contains("TaskItemFromList:"));
     }
 
+    @Test
+    public void test_fluid() {
+        OpenAPI api  = SwaggerBuilder.builder()
+                .interfaces(Collections.singletonList(ITaskService.class))
+                .build()
+                .buildOpenApiModel();
+        String  yaml = Yaml.pretty(api);
+    }
+
     private boolean acceptMethod(Class<?> aClass, Method method) {
         for (Class<?> type : method.getParameterTypes()) {
             if(InputStream.class.isAssignableFrom(type)) {

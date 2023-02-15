@@ -31,8 +31,7 @@ public class SwaggerMethodPathItem {
     private final IResponseExamples responseExamples;
 
     public SwaggerMethodPathItem(
-              IServiceDescriptionExtractor   aServiceDescriptionExtractor
-            , IOperationDescriptionExtractor aOperationDescriptionExtractor
+              IOperationDescriptionExtractor aOperationDescriptionExtractor
             , IPathExtractor                 pathExtractor
             , ISecurityItemExtractor         securityItemExtractor
             , IPathParameters                aAdditionalParameters

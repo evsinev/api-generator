@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.tags.Tag;
+import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 public class SwaggerBuilder {
@@ -34,42 +37,49 @@ public class SwaggerBuilder {
     private final IServiceDescriptionExtractor serviceDescription;
     private final IServiceAddListener          serviceAddListener;
 
+    @Builder
     public SwaggerBuilder(
-              @Nonnull OpenAPI                        aOpenApi
-            , @Nonnull IMethodAcceptor                aMethodAcceptor
-            , @Nonnull List<Class<?>>                 aInterfaces
-            , @Nonnull IPathExtractor                 aMethodPathExtractor
-            , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
-            , @Nonnull IServiceDescriptionExtractor   aServiceDescriptionExtractor
-            , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , @Nonnull IPathParameters                aAdditionalParameters
-            , @Nonnull List<Class<?>>                 aErrorClasses
-            , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
-            , @Nonnull IServiceAddListener            aServiceAddListener
-            , @Nonnull IRequestExamples               aRequestExamples
-            , @Nonnull IResponseExamples              aResponseExamples
+              @Nonnull OpenAPI                        openApi
+            , @Nonnull IMethodAcceptor                methodAcceptor
+            , @Nonnull List<Class<?>>                 interfaces
+            , @Nonnull IPathExtractor                 methodPathExtractor
+            , @Nonnull ISecurityItemExtractor         securityItemExtractor
+            , @Nonnull IServiceDescriptionExtractor   serviceDescriptionExtractor
+            , @Nonnull IOperationDescriptionExtractor operationDescriptionExtractor
+            , @Nonnull IPathParameters                additionalParameters
+            , @Nonnull List<Class<?>>                 errorClasses
+            , @Nonnull IErrorResponsesExtractor       errorResponsesExtractor
+            , @Nonnull IServiceAddListener            serviceAddListener
+            , @Nonnull IRequestExamples               requestExamples
+            , @Nonnull IResponseExamples              responseExamples
     ) {
-        interfaces          = createSortedArray(aInterfaces);
-        api                 = aOpenApi;
-        methodPathExtractor = aMethodPathExtractor;
-        errorClasses        = aErrorClasses;
-        methodAcceptor      = aMethodAcceptor;
-        serviceDescription  = aServiceDescriptionExtractor;
-        serviceAddListener  = aServiceAddListener;
+        this.interfaces          = createSortedArray(interfaces);
+        this.api                 = def ( openApi, new OpenAPI());
+        this.methodPathExtractor = def ( methodPathExtractor, (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "/" + aMethod.getName());
+        this.errorClasses        = def ( errorClasses, emptyList());
+        this.methodAcceptor      = def ( methodAcceptor, (clazz, aMethod) -> true);
+        this.serviceDescription  = def ( serviceDescriptionExtractor, aClass -> Optional.empty());
+        this.serviceAddListener  = def ( serviceAddListener, (aPaths, aClass) -> {});
 
         swaggerMethodPathItem = new SwaggerMethodPathItem(
-                  aServiceDescriptionExtractor
-                , aOperationDescriptionExtractor
-                , aMethodPathExtractor
-                , aSecurityItemExtractor
-                , aAdditionalParameters
-                , aErrorResponsesExtractor
-                , aRequestExamples
-                , aResponseExamples
+                  def ( operationDescriptionExtractor, (aPath, aClass, aMethod) -> Optional.empty())
+                , this.methodPathExtractor
+                , def ( securityItemExtractor, (aClass, aMethod) -> Optional.empty())
+                , def ( additionalParameters, (path, clazz, aMethod) -> emptyList())
+                , def ( errorResponsesExtractor, (aPath, aClass, aMethod) -> emptyList())
+                , def ( requestExamples, (aPath, aClass, aMethod) -> emptyList())
+                , def ( responseExamples, (aPath, aClass, aMethod) -> emptyList())
         );
     }
 
+    private static <T> T def(T aValue, T aDefault) {
+        return aValue != null ? aValue : aDefault;
+    }
+
     private static List<Class<?>> createSortedArray(List<Class<?>> aInterfaces) {
+        if(aInterfaces == null) {
+            throw new IllegalStateException("No any interfaces provided. Did you fill interfaces() method or interfaces parameter?  ");
+        }
         ArrayList<Class<?>> classes = new ArrayList<>(aInterfaces);
         classes.sort(Comparator.comparing(Class::getSimpleName));
         return classes;
@@ -104,7 +114,7 @@ public class SwaggerBuilder {
                             , swaggerMethodPathItem.createPathItem(clazz, method)
                     );
                 } catch (Exception e) {
-                    LOG.error("Cannot create path items for method {}.{}()", clazz.getSimpleName(), method.getName());
+                    LOG.error("Cannot create path items for method {}.{}()", clazz.getSimpleName(), method.getName(), e);
                 }
             }
         }
