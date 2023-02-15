@@ -1,8 +1,11 @@
-# Generates procedures stub
+# Generates API
 
-Maven plugin for generating typescript, swagger API from java interfaces.
+* Maven plugin for generating typescript, swagger API from java interfaces.
+* Generates swagger API from java sources
 
-## How to use
+## Typescript plugin
+
+### Adding plugin to your pom.xml
 
 ```xml
 <build>
@@ -27,12 +30,48 @@ Maven plugin for generating typescript, swagger API from java interfaces.
 </build>
 ```
 
-## Configuration parameters
+### Configuration parameters
 
 | Name          | Default value     | Description                         |
 |---------------|-------------------|-------------------------------------|
 | prefixSegment | /api              | Prefix for path                     |
 | targetDir     | target/procedures | Where to generate stored procedures |
+   
+
+## Generates swagger API
+
+### Adding library to your pom.xml
+
+```xml
+<dependency>
+    <groupId>com.payneteasy.api-generator</groupId>
+    <artifactId>api-generator-swagger</artifactId>
+    <version>1.0-8</version>
+</dependency>
+```
+
+### Create yaml
+
+```java
+SwaggerBuilder swaggerBuilder = new SwaggerBuilder(
+        new OpenAPI()
+        , this::acceptMethod
+        , Collections.singletonList(ITaskService.class)
+        , (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName()
+        , (aClass, aMethod) -> empty()
+        , (aClass) -> empty()
+        , new MarkdownHeaders(new File("src/test/resources/sample-api.md"))
+        , (path, clazz, aMethod) -> emptyList()
+        , emptyList()
+        , (aPath, aClass, aMethod) -> emptyList()
+        , (aPaths, aClass) -> {}
+        , (aPath, aClass, aMethod) -> emptyList()
+        , (aPath, aClass, aMethod) -> emptyList()
+);
+
+OpenAPI openAPI = swaggerBuilder.buildOpenApiModel();
+String  yaml    = Yaml.pretty(openAPI);
+```
 
 ## License
 

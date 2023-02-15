@@ -42,7 +42,7 @@ public class SwaggerBuilder {
             , @Nonnull ISecurityItemExtractor         aSecurityItemExtractor
             , @Nonnull IServiceDescriptionExtractor   aServiceDescriptionExtractor
             , @Nonnull IOperationDescriptionExtractor aOperationDescriptionExtractor
-            , @Nonnull IPathParameters aAdditionalParameters
+            , @Nonnull IPathParameters                aAdditionalParameters
             , @Nonnull List<Class<?>>                 aErrorClasses
             , @Nonnull IErrorResponsesExtractor       aErrorResponsesExtractor
             , @Nonnull IServiceAddListener            aServiceAddListener
