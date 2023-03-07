@@ -23,22 +23,14 @@ public class SwaggerBuilderTest {
 
     @Test
     public void buildYaml() {
-        SwaggerBuilder swaggerBuilder = new SwaggerBuilder(
-                new OpenAPI()
-                , this::acceptMethod
-                , Collections.singletonList(ITaskService.class)
-                , (aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName()
-                , (aClass, aMethod) -> empty()
-                , (aClass) -> empty()
-                , new MarkdownHeaders(new File("src/test/resources/sample-api.md"))
-                , (path, clazz, aMethod) -> emptyList()
-                , emptyList()
-                , (aPath, aClass, aMethod) -> emptyList()
-                , (aPaths, aClass) -> {}
-                , (aPath, aClass, aMethod) -> emptyList()
-                , (aPath, aClass, aMethod) -> emptyList()
-        );
-
+        SwaggerBuilder swaggerBuilder = SwaggerBuilder.builder()
+                .openApi(new OpenAPI())
+                .methodAcceptor(this::acceptMethod)
+                .interfaces(Collections.singletonList(ITaskService.class))
+                .methodPathExtractor((aClass, aMethod) -> "/api/" + aClass.getSimpleName() + "." + aMethod.getName())
+                .operationDescriptionExtractor(new MarkdownHeaders(new File("src/test/resources/sample-api.md")))
+                .build();
+        
         OpenAPI openAPI = swaggerBuilder.buildOpenApiModel();
         String  yaml    = Yaml.pretty(openAPI);
 

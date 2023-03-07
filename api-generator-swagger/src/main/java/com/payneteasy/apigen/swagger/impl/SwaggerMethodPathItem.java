@@ -27,8 +27,10 @@ public class SwaggerMethodPathItem {
     private final IOperationDescriptionExtractor operationDescriptionExtractor;
     private final IPathParameters                additionalParameters;
     private final IErrorResponsesExtractor       errorResponsesExtractor;
-    private final IRequestExamples  requestExample;
-    private final IResponseExamples responseExamples;
+    private final IRequestExamples               requestExample;
+    private final IResponseExamples              responseExamples;
+    private final IServiceTagExtractor           serviceTagExtractor;
+    private final IOperationSummary              operationSummary;
 
     public SwaggerMethodPathItem(
               IOperationDescriptionExtractor aOperationDescriptionExtractor
@@ -38,6 +40,8 @@ public class SwaggerMethodPathItem {
             , IErrorResponsesExtractor       aErrorResponsesExtractor
             , IRequestExamples               aRequestExamples
             , IResponseExamples              aResponseExamples
+            , IServiceTagExtractor           aServiceTagExtractor
+            , IOperationSummary              aOperationSummary
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
@@ -46,6 +50,8 @@ public class SwaggerMethodPathItem {
         errorResponsesExtractor       = aErrorResponsesExtractor;
         requestExample                = aRequestExamples;
         responseExamples              = aResponseExamples;
+        serviceTagExtractor           = aServiceTagExtractor;
+        operationSummary              = aOperationSummary;
     }
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
@@ -65,7 +71,7 @@ public class SwaggerMethodPathItem {
     @Nonnull
     private Operation createOperation(String aPath, Class<?> clazz, Method aMethod) {
         Operation operation = new Operation();
-        operation.addTagsItem(clazz.getSimpleName());
+        operation.addTagsItem(serviceTagExtractor.getServiceTag(clazz).orElse(clazz.getSimpleName()));
 
         MethodParameters parameters = getParameters(aMethod);
         if(parameters.hasParameters()) {
@@ -74,7 +80,7 @@ public class SwaggerMethodPathItem {
 
         operation.responses(createResponse(aPath, clazz, aMethod));
 
-        operation.summary(aMethod.getName());
+        operation.summary(operationSummary.getOperationSummary(aPath, clazz, aMethod).orElse(aMethod.getName()));
 
         securityItemExtractor
                 .getSecurityItem(clazz, aMethod)

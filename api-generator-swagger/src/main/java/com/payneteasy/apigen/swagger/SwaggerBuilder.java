@@ -35,6 +35,7 @@ public class SwaggerBuilder {
     private final List<Class<?>>               errorClasses;
     private final IMethodAcceptor              methodAcceptor;
     private final IServiceDescriptionExtractor serviceDescription;
+    private final IServiceTagExtractor         serviceTag;
     private final IServiceAddListener          serviceAddListener;
 
     @Builder
@@ -45,6 +46,8 @@ public class SwaggerBuilder {
             , @Nonnull IPathExtractor                 methodPathExtractor
             , @Nonnull ISecurityItemExtractor         securityItemExtractor
             , @Nonnull IServiceDescriptionExtractor   serviceDescriptionExtractor
+            , @Nonnull IServiceTagExtractor           serviceTagExtractor
+            , @Nonnull IOperationSummary              operationSummary
             , @Nonnull IOperationDescriptionExtractor operationDescriptionExtractor
             , @Nonnull IPathParameters                additionalParameters
             , @Nonnull List<Class<?>>                 errorClasses
@@ -59,8 +62,8 @@ public class SwaggerBuilder {
         this.errorClasses        = def ( errorClasses, emptyList());
         this.methodAcceptor      = def ( methodAcceptor, (clazz, aMethod) -> true);
         this.serviceDescription  = def ( serviceDescriptionExtractor, aClass -> Optional.empty());
+        this.serviceTag          = def ( serviceTagExtractor, aClass -> Optional.empty());
         this.serviceAddListener  = def ( serviceAddListener, (aPaths, aClass) -> {});
-
         swaggerMethodPathItem = new SwaggerMethodPathItem(
                   def ( operationDescriptionExtractor, (aPath, aClass, aMethod) -> Optional.empty())
                 , this.methodPathExtractor
@@ -69,6 +72,8 @@ public class SwaggerBuilder {
                 , def ( errorResponsesExtractor, (aPath, aClass, aMethod) -> emptyList())
                 , def ( requestExamples, (aPath, aClass, aMethod) -> emptyList())
                 , def ( responseExamples, (aPath, aClass, aMethod) -> emptyList())
+                , serviceTag
+                , def ( operationSummary, (aPath, aClass, aMethod) -> Optional.empty())
         );
     }
 
@@ -135,7 +140,7 @@ public class SwaggerBuilder {
     private List<Tag> getTags(List<Class<?>> aInterfaces) {
         return aInterfaces.stream()
                 .map(trait -> new Tag()
-                        .name(trait.getSimpleName())
+                        .name(serviceTag.getServiceTag(trait).orElse(trait.getSimpleName()))
                         .description(serviceDescription.getServiceDescription(trait).orElse(trait.getSimpleName()))
                 )
                 .collect(toList());

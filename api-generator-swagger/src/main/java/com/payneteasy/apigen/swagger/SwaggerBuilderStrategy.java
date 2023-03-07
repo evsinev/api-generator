@@ -36,9 +36,18 @@ public interface SwaggerBuilderStrategy {
         Optional<String> getServiceDescription(Class<?> aClass);
     }
 
+    interface IServiceTagExtractor {
+        Optional<String> getServiceTag(Class<?> aClass);
+    }
+
     interface IResponseExamples {
         @Nonnull
         List<String> getResponseExamples(String aPath, Class<?> aClass, Method aMethod);
+    }
+
+    interface IOperationSummary {
+        @Nonnull
+        Optional<String> getOperationSummary(String aPath, Class<?> aClass, Method aMethod);
     }
 
     interface IRequestExamples {
