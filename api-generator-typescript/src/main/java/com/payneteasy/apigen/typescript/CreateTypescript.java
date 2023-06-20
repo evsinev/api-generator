@@ -11,20 +11,25 @@ import static com.payneteasy.apigen.typescript.InterfaceMethodsToTypescript.getT
 public class CreateTypescript {
 
     private final String prefixSegment;
+    private final File   templateDir;
 
-    public CreateTypescript(String prefixSegment) {
+    public CreateTypescript(String prefixSegment, File templateDir) {
         this.prefixSegment = prefixSegment;
+        this.templateDir   = templateDir;
     }
 
-    private final FreemarkerTemplate template = new FreemarkerFactory(new File("no"))
-            .template("services.ts");
+    public CreateTypescript(String prefixSegment) {
+        this(prefixSegment, new File("no"));
+    }
 
     private final JavaClassToTypescriptTypeConverter converter = new JavaClassToTypescriptTypeConverter();
 
     public String generateTypescript(Class<?> aInterface) {
         TypescriptMembers members = converter.getTopLevelTypes(FindClassesInInterface.getAllClassesForInterfaces(aInterface));
 
-        return template.instance()
+        return new FreemarkerFactory(templateDir)
+                .template("services.ts")
+                .instance()
                 .add("types", members.getTypes())
                 .add("enums", members.getEnums())
                 .add("methods", getTypescriptMethods(prefixSegment, aInterface))
