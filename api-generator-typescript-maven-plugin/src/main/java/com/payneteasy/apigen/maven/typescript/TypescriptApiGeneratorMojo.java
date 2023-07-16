@@ -32,9 +32,9 @@ public class TypescriptApiGeneratorMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "/api", required = true, readonly = true)
     private String prefixSegment;
-//
-//    @Parameter(defaultValue = "role_name", required = true, readonly = true)
-//    private String metaLoginRoleName;
+
+    @Parameter(defaultValue = "no-dir", required = true, readonly = true)
+    private String templatesDir;
 
     @Parameter(defaultValue = "target/api", required = true, readonly = true)
     private File targetDir;
@@ -58,7 +58,7 @@ public class TypescriptApiGeneratorMojo extends AbstractMojo {
 
         File packageDir = FileUtils.createDirectories(new File(targetDir, ClassUtils.getLastPackageName(clazz)));
 
-        CreateTypescript createTypescript = new CreateTypescript(prefixSegment);
+        CreateTypescript createTypescript = new CreateTypescript(prefixSegment, new File(templatesDir));
         String           text             = createTypescript.generateTypescript(clazz);
 
         FileUtils.writeTextToFile(text, new File(packageDir, clazz.getSimpleName() + ".ts"));

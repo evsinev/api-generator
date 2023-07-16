@@ -1,60 +1,42 @@
-import { useApi, IUseApi, useSend, IUseSend } from "@hooks/useApi";
+import { GetServerSidePropsContext } from 'next';
+import { serverPost } from '@/libs/server/server-post';
+import useQuery from '@/hooks/useQuery';
 
 [#list enums as enum]
-export enum [=enum.enumName]  {
+export enum [=enum.enumName] {
     [#list enum.enumValues as value]
-    [=value] = "[=value]",
+    [=value] = '[=value]',
     [/#list]
 }
 
 [/#list]
-
 [#list types as type]
 export type [=type.typeName] = {
     [#list type.fields as field]
     [=field.fieldName][=field.fieldNullable]: [=field.fieldType];
     [/#list]
-}
+};
 
 [/#list]
 
-export default class [=className] {
-
-    //region API
-[#list methods as method]
-    static [=method.methodName](aRequest : [=method.parameterType]) : Promise<[=method.returnType]> {
-        return doPost<[=method.returnType]>("[=method.path]", aRequest);
-    }
-
-[/#list]
-    //endregion
-
-    //region useEffect
-[#list methods as method]
-    static useEffect[=method.uppercaseName](aRequest : [=method.parameterType]) : AsyncState<[=method.returnType]> {
-        return useEffectAxios<[=method.returnType]>("[=method.path]", aRequest);
-    }
-
-[/#list]
-    //endregion
-
-}
-
-
+// region server side
+// ------------------
 
 [#list methods as method]
-[#if method.hasParameters()]
-export const use[=method.uppercaseName] = (params : [=method.parameterType]) : IUseApi<[=method.returnType]> => {
-    return useSend<[=method.returnType]>("[=method.path]", params);
+export function [=method.methodName]ServerPost(ctx: GetServerSidePropsContext, aRequest: [=method.parameterType]) {
+  return serverPost<[=method.returnType]>({ url: '[=method.path]', params: aRequest, req: ctx.req });
 }
 
-export const use[=method.uppercaseName]Effect = (params : [=method.parameterType]) : IUseApi<[=method.returnType]> => {
-    return useApi<[=method.returnType]>("[=method.path]", params);
-}
-
-[#else]
-export const use[=method.uppercaseName] = () : IUseApi<[=method.returnType]> => {
-    return useApi<[=method.returnType]>("[=method.path]");
-}
-[/#if]
 [/#list]
+// endregion
+
+// region client side
+// ------------------
+
+[#list methods as method]
+export function use[=method.uppercaseName](aRequest: [=method.parameterType], aLastResponse?: [=method.returnType]) {
+  return useQuery<[=method.returnType]>({ url: '[=method.path]', params: aRequest, initState: aLastResponse });
+}
+
+[/#list]
+// endregion
