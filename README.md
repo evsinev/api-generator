@@ -13,7 +13,7 @@
         <plugin>
             <groupId>com.payneteasy.api-generator</groupId>
             <artifactId>api-generator-typescript-maven-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0-12</version>
             <configuration>
                 <prefixSegment>/ui/admin/api</prefixSegment>
                 <targetDir>target/api-typescript</targetDir>
