@@ -76,7 +76,7 @@ public class SwaggerMethodComponents {
 
         added.add(aClass);
 
-        Map<String, Schema> map = converters.read(aClass);
+        Map<String, Schema> map = converters.readAll(aClass);
         for (Map.Entry<String, Schema> entry : map.entrySet()) {
             components.addSchemas(entry.getKey(), entry.getValue());
         }
