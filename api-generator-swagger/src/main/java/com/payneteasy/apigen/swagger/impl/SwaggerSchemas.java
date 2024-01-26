@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class SwaggerSchemas {
@@ -20,11 +21,33 @@ public class SwaggerSchemas {
     public static Schema<?> createSchema(Class<?> aClass, Type aType, String aLocation) {
         PrimitiveType primitiveType = PrimitiveType.fromType(aClass);
 
+        if(aClass.isArray() && aClass.getComponentType().isPrimitive()) {
+            Schema property = PrimitiveType.createProperty(aClass.getComponentType().getName());
+            return new ArraySchema().type("array").items(property);
+        }
+
+        if(aClass.isArray() && aClass.getComponentType().isEnum()) {
+            Schema<Object> objectSchema = new Schema<>();
+            objectSchema._enum(Arrays.asList(aClass.getComponentType().getEnumConstants()));
+            return new ArraySchema()
+                    .type("array")
+                    .items(objectSchema);
+        }
+
+        if (aClass.isEnum()) {
+            return new ObjectSchema()
+                    .type("string")
+                    ._enum(Arrays.asList(aClass.getEnumConstants()));
+        }
+
         if(primitiveType != null) {
             return primitiveType.createProperty();
         }
 
         if(isOurType(aClass)) {
+            if (aClass.isArray()) {
+                return new ObjectSchema().$ref("#/components/schemas/" + aClass.getComponentType().getSimpleName());
+            }
             return new ObjectSchema().$ref("#/components/schemas/" + aClass.getSimpleName());
         }
 

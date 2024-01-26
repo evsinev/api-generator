@@ -2,6 +2,7 @@ package com.payneteasy.apigen.swagger;
 
 import com.payneteasy.apigen.swagger.impl.MarkdownHeaders;
 import com.payneteasy.apigen.swagger.task.ITaskService;
+import com.payneteasy.apigen.swagger.task.ITaskServiceBugs;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.junit.Test;
@@ -13,8 +14,6 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Collections;
 
-import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
 import static org.junit.Assert.assertTrue;
 
 public class SwaggerBuilderTest {
@@ -52,6 +51,15 @@ public class SwaggerBuilderTest {
     public void test_fluid() {
         OpenAPI api  = SwaggerBuilder.builder()
                 .interfaces(Collections.singletonList(ITaskService.class))
+                .build()
+                .buildOpenApiModel();
+        String  yaml = Yaml.pretty(api);
+    }
+
+    @Test
+    public void test_bugs() {
+        OpenAPI api  = SwaggerBuilder.builder()
+                .interfaces(Collections.singletonList(ITaskServiceBugs.class))
                 .build()
                 .buildOpenApiModel();
         String  yaml = Yaml.pretty(api);
