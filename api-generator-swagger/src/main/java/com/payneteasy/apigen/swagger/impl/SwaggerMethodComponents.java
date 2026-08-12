@@ -22,18 +22,34 @@ public class SwaggerMethodComponents {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger( SwaggerMethodComponents.class );
 
-    private final ModelConverters converters = ModelConverters.getInstance();
     /** Types whose subtree has been walked to the end. */
-    private final Set<Class<?>>   completed  = new HashSet<>();
+    private final Set<Class<?>>    completed  = new HashSet<>();
     /** Types currently being walked — the cycle guard for mutually referencing models. */
-    private final Set<Class<?>>   inProgress = new HashSet<>();
-    private final List<Class<?>>  errorClasses;
-    private final Components      components = new Components();
-    private final IMethodAcceptor methodAcceptor;
+    private final Set<Class<?>>    inProgress = new HashSet<>();
+    private final List<Class<?>>   errorClasses;
+    private final Components       components = new Components();
+    private final IMethodAcceptor  methodAcceptor;
+    private final TerminalPackages terminalPackages;
+    private final ModelConverters  converters;
 
     public SwaggerMethodComponents(@Nonnull List<Class<?>> errorClasses, IMethodAcceptor aMethodAcceptor) {
+        this(errorClasses, aMethodAcceptor, TerminalPackages.defaults());
+    }
+
+    public SwaggerMethodComponents(
+              @Nonnull List<Class<?>> errorClasses
+            , IMethodAcceptor         aMethodAcceptor
+            , TerminalPackages        aTerminalPackages
+    ) {
         this.errorClasses = errorClasses;
-        methodAcceptor = aMethodAcceptor;
+        methodAcceptor    = aMethodAcceptor;
+        terminalPackages  = aTerminalPackages == null ? TerminalPackages.defaults() : aTerminalPackages;
+
+        // an own instance, not ModelConverters.getInstance(): the singleton is JVM-wide and
+        // registering a converter on it would change the behaviour of every other swagger user
+        // in the process
+        converters = new ModelConverters();
+        converters.addConverter(new TerminalTypeModelConverter(terminalPackages));
     }
 
     public Components createComponents(List<Class<?>> aInterfaces) {
@@ -77,7 +93,7 @@ public class SwaggerMethodComponents {
             return;
         }
 
-        if(completed.contains(aClass)) {
+        if(completed.contains(aClass) || terminalPackages.isTerminal(aClass)) {
             return;
         }
 
