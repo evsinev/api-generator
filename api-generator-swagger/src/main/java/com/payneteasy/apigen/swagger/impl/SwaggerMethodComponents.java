@@ -23,7 +23,10 @@ public class SwaggerMethodComponents {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger( SwaggerMethodComponents.class );
 
     private final ModelConverters converters = ModelConverters.getInstance();
-    private final Set<Class<?>>   added      = new HashSet<>();
+    /** Types whose subtree has been walked to the end. */
+    private final Set<Class<?>>   completed  = new HashSet<>();
+    /** Types currently being walked — the cycle guard for mutually referencing models. */
+    private final Set<Class<?>>   inProgress = new HashSet<>();
     private final List<Class<?>>  errorClasses;
     private final Components      components = new Components();
     private final IMethodAcceptor methodAcceptor;
@@ -41,16 +44,12 @@ public class SwaggerMethodComponents {
                     continue;
                 }
 
-                try {
-                    // return type
-                    addTypes(method.getReturnType(), method.getGenericReturnType());
+                // one try per type: a type we cannot handle must not take the sibling
+                // parameters down with it, because createPaths() still emits $refs for them
+                addTypesSafely(clazz, method, method.getReturnType(), method.getGenericReturnType());
 
-                    // parameters
-                    for(int i=0; i<method.getParameterTypes().length; i++) {
-                        addTypes(method.getParameterTypes()[i], method.getGenericParameterTypes()[i]);
-                    }
-                } catch (Exception e) {
-                    LOG.error("Cannot processes {}.{}()", clazz.getSimpleName(), method.getName(), e);
+                for(int i=0; i<method.getParameterTypes().length; i++) {
+                    addTypesSafely(clazz, method, method.getParameterTypes()[i], method.getGenericParameterTypes()[i]);
                 }
             }
         }
@@ -63,6 +62,14 @@ public class SwaggerMethodComponents {
         return components;
     }
 
+    private void addTypesSafely(Class<?> aClass, Method aMethod, Class<?> aType, Type aGenericType) {
+        try {
+            addTypes(aType, aGenericType);
+        } catch (Exception e) {
+            LOG.error("Cannot process type {} of {}.{}()", aType, aClass.getSimpleName(), aMethod.getName(), e);
+        }
+    }
+
     private void addTypes(Class<?> aClass, Type aType) {
         if(SwaggerSchemas.isCollection(aClass)) {
             Class<?> collectionGenericType = getCollectionGenericType(aType);
@@ -70,23 +77,34 @@ public class SwaggerMethodComponents {
             return;
         }
 
-        if(added.contains(aClass)) {
+        if(completed.contains(aClass)) {
             return;
         }
 
-        added.add(aClass);
-
-        Map<String, Schema> map = converters.readAll(aClass);
-        for (Map.Entry<String, Schema> entry : map.entrySet()) {
-            components.addSchemas(entry.getKey(), entry.getValue());
+        // already on the stack: stop, or a cycle between two models would recurse forever
+        if(!inProgress.add(aClass)) {
+            return;
         }
 
-        for (Field field : getAllFields(aClass)) {
-            if(isOurType(field)) {
-                addTypes(field.getType(), field.getGenericType());
-            } else if(isCollection(field.getType())) {
-                addTypes(getCollectionGenericType(field), field.getGenericType());
+        try {
+            Map<String, Schema> map = converters.readAll(aClass);
+            for (Map.Entry<String, Schema> entry : map.entrySet()) {
+                components.addSchemas(entry.getKey(), entry.getValue());
             }
+
+            for (Field field : getAllFields(aClass)) {
+                if(isOurType(field)) {
+                    addTypes(field.getType(), field.getGenericType());
+                } else if(isCollection(field.getType())) {
+                    addTypes(getCollectionGenericType(field), field.getGenericType());
+                }
+            }
+
+            // marked only now: a type whose subtree blew up must be retried from the next
+            // entry point instead of being remembered as done
+            completed.add(aClass);
+        } finally {
+            inProgress.remove(aClass);
         }
     }
 
