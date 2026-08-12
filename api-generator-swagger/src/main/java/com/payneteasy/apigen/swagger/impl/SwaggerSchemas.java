@@ -19,6 +19,10 @@ public class SwaggerSchemas {
     }
 
     public static Schema<?> createSchema(Class<?> aClass, Type aType, String aLocation) {
+        return createSchema(aClass, aType, aLocation, TerminalPackages.defaults());
+    }
+
+    public static Schema<?> createSchema(Class<?> aClass, Type aType, String aLocation, TerminalPackages aTerminalPackages) {
         PrimitiveType primitiveType = PrimitiveType.fromType(aClass);
 
         if(aClass.isArray() && aClass.getComponentType().isPrimitive()) {
@@ -44,6 +48,11 @@ public class SwaggerSchemas {
             return primitiveType.createProperty();
         }
 
+        // opaque on purpose: no $ref, because nothing registers a schema for these
+        if(aTerminalPackages.isTerminal(aClass)) {
+            return new ObjectSchema();
+        }
+
         if(isOurType(aClass)) {
             if (aClass.isArray()) {
                 return new ObjectSchema().$ref("#/components/schemas/" + aClass.getComponentType().getSimpleName());
@@ -55,7 +64,9 @@ public class SwaggerSchemas {
             return new ArraySchema()
                     .items(createSchema(
                             getCollectionGenericType(aType)
+                            , null
                             , aLocation + " is collection"
+                            , aTerminalPackages
                     ));
         }
 

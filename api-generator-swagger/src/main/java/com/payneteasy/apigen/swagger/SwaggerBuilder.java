@@ -4,6 +4,7 @@ import com.payneteasy.apigen.core.util.Methods;
 import com.payneteasy.apigen.swagger.SwaggerBuilderStrategy.*;
 import com.payneteasy.apigen.swagger.impl.SwaggerMethodComponents;
 import com.payneteasy.apigen.swagger.impl.SwaggerMethodPathItem;
+import com.payneteasy.apigen.swagger.impl.TerminalPackages;
 import com.payneteasy.apigen.swagger.impl.sorted.SortedPaths;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -37,6 +38,7 @@ public class SwaggerBuilder {
     private final IServiceDescriptionExtractor serviceDescription;
     private final IServiceTagExtractor         serviceTag;
     private final IServiceAddListener          serviceAddListener;
+    private final TerminalPackages              terminalPackages;
 
     @Builder
     public SwaggerBuilder(
@@ -55,6 +57,7 @@ public class SwaggerBuilder {
             , @Nonnull IServiceAddListener            serviceAddListener
             , @Nonnull IRequestExamples               requestExamples
             , @Nonnull IResponseExamples              responseExamples
+            , List<String>                          terminalPackages
     ) {
         this.interfaces          = createSortedArray(interfaces);
         this.api                 = def ( openApi, new OpenAPI());
@@ -64,6 +67,7 @@ public class SwaggerBuilder {
         this.serviceDescription  = def ( serviceDescriptionExtractor, aClass -> Optional.empty());
         this.serviceTag          = def ( serviceTagExtractor, aClass -> Optional.empty());
         this.serviceAddListener  = def ( serviceAddListener, (aPaths, aClass) -> {});
+        this.terminalPackages    = new TerminalPackages(terminalPackages);
         swaggerMethodPathItem = new SwaggerMethodPathItem(
                   def ( operationDescriptionExtractor, (aPath, aClass, aMethod) -> Optional.empty())
                 , this.methodPathExtractor
@@ -74,6 +78,7 @@ public class SwaggerBuilder {
                 , def ( responseExamples, (aPath, aClass, aMethod) -> emptyList())
                 , serviceTag
                 , def ( operationSummary, (aPath, aClass, aMethod) -> Optional.empty())
+                , this.terminalPackages
         );
     }
 
@@ -94,7 +99,7 @@ public class SwaggerBuilder {
         api
             .tags(getTags(interfaces))
             .paths(createPaths(interfaces))
-            .setComponents(new SwaggerMethodComponents(errorClasses, methodAcceptor)
+            .setComponents(new SwaggerMethodComponents(errorClasses, methodAcceptor, terminalPackages)
                 .createComponents(interfaces)
             );
 

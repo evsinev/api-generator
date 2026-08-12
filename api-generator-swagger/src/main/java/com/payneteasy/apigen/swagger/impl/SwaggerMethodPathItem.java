@@ -31,6 +31,7 @@ public class SwaggerMethodPathItem {
     private final IResponseExamples              responseExamples;
     private final IServiceTagExtractor           serviceTagExtractor;
     private final IOperationSummary              operationSummary;
+    private final TerminalPackages               terminalPackages;
 
     public SwaggerMethodPathItem(
               IOperationDescriptionExtractor aOperationDescriptionExtractor
@@ -42,6 +43,7 @@ public class SwaggerMethodPathItem {
             , IResponseExamples              aResponseExamples
             , IServiceTagExtractor           aServiceTagExtractor
             , IOperationSummary              aOperationSummary
+            , TerminalPackages               aTerminalPackages
     ) {
         operationDescriptionExtractor = aOperationDescriptionExtractor;
         this.pathExtractor            = pathExtractor;
@@ -52,6 +54,7 @@ public class SwaggerMethodPathItem {
         responseExamples              = aResponseExamples;
         serviceTagExtractor           = aServiceTagExtractor;
         operationSummary              = aOperationSummary;
+        terminalPackages              = aTerminalPackages == null ? TerminalPackages.defaults() : aTerminalPackages;
     }
 
     public PathItem createPathItem(Class<?> clazz, Method aMethod) {
@@ -97,7 +100,7 @@ public class SwaggerMethodPathItem {
 
         Schema<?> schema = void.class.equals(aMethod.getReturnType())
             ? null
-            : createSchema(aMethod.getReturnType(), aMethod.getGenericReturnType(), "Return for " + aClass.getSimpleName() + "." + aMethod.getName() + "()");
+            : createSchema(aMethod.getReturnType(), aMethod.getGenericReturnType(), "Return for " + aClass.getSimpleName() + "." + aMethod.getName() + "()", terminalPackages);
 
 
         MediaType successMediaType = new MediaType().schema(schema);
@@ -147,7 +150,7 @@ public class SwaggerMethodPathItem {
     private Content errorJson(Class<?> aClass) {
         return new Content()
                 .addMediaType("application/json; charset=utf-8", new MediaType()
-                        .schema(createSchema(aClass, "Error class " + aClass.getSimpleName()))
+                        .schema(createSchema(aClass, null, "Error class " + aClass.getSimpleName(), terminalPackages))
                 );
     }
 
@@ -181,7 +184,7 @@ public class SwaggerMethodPathItem {
                 .content(new Content()
                     .addMediaType("application/json", mediaType
                         .schema(
-                                createSchema(oneArgument, "One argument for method ")
+                                createSchema(oneArgument, null, "One argument for method ", terminalPackages)
                                     .description(methodParameter.getName())
                         )
 
