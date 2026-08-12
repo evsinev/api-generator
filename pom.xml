@@ -123,10 +123,13 @@
                 <artifactId>swagger-core</artifactId>
                 <version>2.2.8</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
+                    <!--
+                        jakarta.xml.bind-api is deliberately NOT excluded: up to 2.x that artifact
+                        still ships the javax.xml.bind packages, and swagger-core compiles against
+                        javax.xml.bind.annotation.XmlElement. JDK 8 provided those classes itself,
+                        JDK 11 removed them, so excluding the artifact makes swagger-core die with
+                        NoClassDefFoundError on any modern JDK.
+                    -->
                     <exclusion>
                         <groupId>jakarta.validation</groupId>
                         <artifactId>jakarta.validation-api</artifactId>
