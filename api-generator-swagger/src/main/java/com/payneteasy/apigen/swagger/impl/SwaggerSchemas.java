@@ -90,9 +90,9 @@ public class SwaggerSchemas {
         return Collection.class.isAssignableFrom(aClass);
     }
 
+    /** A field declares the same shapes a method signature does, so it is read the same way. */
     static Class<?> getCollectionGenericType(Field aField) {
-        ParameterizedType genericType = (ParameterizedType) aField.getGenericType();
-        return (Class<?>) genericType.getActualTypeArguments()[0];
+        return getCollectionGenericType(aField.getGenericType());
     }
 
     static Class<?> getCollectionGenericType(Type aType) {
@@ -104,9 +104,17 @@ public class SwaggerSchemas {
             return (Class<?>) firstArgument;
         }
 
+        // List<? extends Item>: the bound is what a caller may put in, so it is the item type
         if(firstArgument instanceof WildcardType) {
             WildcardType wildcardType = (WildcardType) firstArgument;
             return (Class<?>) wildcardType.getUpperBounds()[0];
+        }
+
+        // List<Class<? extends X>>, List<Map<String, String>>: the argument is generic itself, and
+        // only its raw type can be a schema. Whether that raw type is worth describing is decided
+        // upstream, by isOurType and the terminal packages.
+        if(firstArgument instanceof ParameterizedType) {
+            return (Class<?>) ((ParameterizedType) firstArgument).getRawType();
         }
 
         throw new IllegalStateException("Strange argument" + firstArgument + " for type " + aType);
