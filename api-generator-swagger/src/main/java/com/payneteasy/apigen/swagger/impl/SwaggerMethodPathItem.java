@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -163,6 +164,9 @@ public class SwaggerMethodPathItem {
         if(aParameters.getParameters().size() == 1) {
             MethodParameter methodParameter = aParameters.getParameters().get(0);
             Class<?>        oneArgument     = methodParameter.getType();
+            // the declared type and not just the erased class: a request that is a List of something
+            // has no schema at all without its element type
+            Type            oneArgumentType = aMethod.getGenericParameterTypes()[methodParameter.getIndex()];
             MediaType       mediaType       = new MediaType();
 
             for (String requestExample : requestExample.getRequestExamples(aPath, aClass, aMethod)) {
@@ -184,7 +188,7 @@ public class SwaggerMethodPathItem {
                 .content(new Content()
                     .addMediaType("application/json", mediaType
                         .schema(
-                                createSchema(oneArgument, null, "One argument for method ", terminalPackages)
+                                createSchema(oneArgument, oneArgumentType, "One argument for method ", terminalPackages)
                                     .description(methodParameter.getName())
                         )
 
